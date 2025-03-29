@@ -6,6 +6,7 @@
     "build": "turbo build",
     "clean": "turbo clean",
     "dev": "turbo dev",
+    "dev:all": "pnpm --filter './apps/**' --parallel dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "test": "turbo test"

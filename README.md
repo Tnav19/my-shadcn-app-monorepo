@@ -72,8 +72,13 @@ This Turborepo has some additional tools already setup for you:
 
 To add components to your app, run the following command at the root of your `packages/ui` app:
 
+To ad next app in web apps , run the following command at the root of your `root` app:
+
 ```bash
 pnpm dlx shadcn@latest add button -c apps/web
+
+
+pnpm dlx create-next-app@latest apps/medi-lab --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --use-pnpm
 ```
 
 This will place the ui components in the `packages/ui/src/components` directory.
