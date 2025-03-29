@@ -4,8 +4,12 @@
     "baseUrl": ".",
     "paths": {
       "@repo/ui/*": ["./src/*"]
-    }
+    },
+    "outDir": "dist",
+    "rootDir": "src",
+    "moduleResolution": "bundler",
+    "module": "ESNext"
   },
-  "include": ["."],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
