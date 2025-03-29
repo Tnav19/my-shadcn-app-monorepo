@@ -11,11 +11,10 @@ import {
     Syringe,
     Users
 } from "lucide-react";
-import DashboardLayout from "../components/DashboardLayout";
 
 export default function DashboardTemplate() {
   return (
-    <DashboardLayout>
+    <>
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Daily overview</h2>
         <div className="grid grid-cols-4 gap-4">
@@ -203,6 +202,6 @@ export default function DashboardTemplate() {
           </Card>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 } 

@@ -1,11 +1,10 @@
 "use client";
 
-import DashboardLayout from "../components/DashboardLayout";
-import { Button } from "@repo/ui/components/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
-import { ChevronLeft, ChevronRight, Plus, LayoutGrid, List, Eye, Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Button } from "@repo/ui/components/button";
 import { Checkbox } from "@repo/ui/components/checkbox";
+import { ChevronLeft, ChevronRight, Eye, LayoutGrid, List, Pencil, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 export default function CalendarPage() {
   const [view, setView] = useState<'grid' | 'list'>('grid');
@@ -63,7 +62,7 @@ export default function CalendarPage() {
   ];
 
   return (
-    <DashboardLayout>
+
       <div>
         <header className="bg-white border-b p-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Appointments</h1>
@@ -192,6 +191,5 @@ export default function CalendarPage() {
           )}
         </div>
       </div>
-    </DashboardLayout>
   );
 } 

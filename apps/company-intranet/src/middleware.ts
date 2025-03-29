@@ -1,10 +1,35 @@
-import { NextResponse } from 'next/server'
+import { createGatewayMiddleware } from '@repo/ui/middleware/index';
 
-export function middleware() {
-  // Allow access to all pages
-  return NextResponse.next();
-}
+const middleware = createGatewayMiddleware({
+  defaultApp: 'company-intranet',
+  apps: {
+    'medi-lab': {
+      loginPath: '/login',
+      basePath: '',
+      port: 3001,
+      authRequired: true,
+      excludePaths: ['/login']
+    },
+    'safe-aq': {
+      loginPath: '/safe-aq/login',
+      basePath: '/safe-aq',
+      port: 3002,
+      authRequired: true,
+    },
+    'company-intranet': {
+      loginPath: '/login',
+      basePath: '/',
+      port: 3000,
+      authRequired: false,
+      excludePaths: ['/login']
+    }
+  }
+});
+
+export default middleware;
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-} 
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ]
+}; 

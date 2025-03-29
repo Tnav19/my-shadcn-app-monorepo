@@ -1,11 +1,5 @@
 import { ReactNode } from 'react';
-import { Sidebar, SidebarProvider } from '../components/sidebar';
-import { Button } from '../components/button';
-import { Avatar, AvatarFallback, AvatarImage } from '../components/avatar';
 import { 
-  Bell, 
-  Search, 
-  Home,
   Building2, 
   Stethoscope,
   Plane,
@@ -17,9 +11,14 @@ import {
   Car,
   Leaf
 } from 'lucide-react';
+import { Header } from '../components/header';
 
 interface MainLayoutProps {
   children: ReactNode;
+  showIndustries?: boolean;
+  isAuthenticated?: boolean;
+  appName?: string;
+  loginPath?: string;
 }
 
 const industries = [
@@ -35,67 +34,48 @@ const industries = [
   { icon: Leaf, label: 'Energy', href: '/industries/energy' },
 ];
 
-export function MainLayout({ children }: MainLayoutProps) {
+export function MainLayout({ 
+  children, 
+  showIndustries = true,
+  isAuthenticated = false,
+  appName = 'HCL Intranet',
+  loginPath = '/login'
+}: MainLayoutProps) {
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-background">
-        {/* Header */}
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 items-center">
-            <div className="mr-4 flex">
-              <a href="/" className="mr-6 flex items-center space-x-2">
-                <Home className="h-6 w-6" />
-                <span className="font-bold">HCL Intranet</span>
-              </a>
-            </div>
+    <div className="min-h-screen bg-background">
+      <Header 
+        isAuthenticated={isAuthenticated}
+        appName={appName}
+        loginPath={loginPath}
+      />
 
-            <div className="flex flex-1 items-center justify-end space-x-2">
-              <Button variant="ghost" size="icon">
-                <Search className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <Bell className="h-4 w-4" />
-              </Button>
-              <Avatar>
-                <AvatarImage src="/avatars/default.png" alt="User" />
-                <AvatarFallback>HCL</AvatarFallback>
-              </Avatar>
+      {/* Main Content */}
+      <main className="p-6">
+        {showIndustries && (
+          /* Industries Grid */
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-6">Industries</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {industries.map((industry) => {
+                const Icon = industry.icon;
+                return (
+                  <a
+                    key={industry.href}
+                    href={industry.href}
+                    className="group flex flex-col items-center justify-center p-4 rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all"
+                  >
+                    <div className="mb-3 p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                      <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium text-center">{industry.label}</span>
+                  </a>
+                );
+              })}
             </div>
           </div>
-        </header>
-
-        {/* Main Content */}
-        <div className="flex">
-          {/* Sidebar */}
-          <Sidebar className="hidden lg:block" />
-          
-          {/* Content */}
-          <main className="flex-1 p-6">
-            {/* Industries Grid */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-6">Industries</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {industries.map((industry) => {
-                  const Icon = industry.icon;
-                  return (
-                    <a
-                      key={industry.href}
-                      href={industry.href}
-                      className="group flex flex-col items-center justify-center p-4 rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all"
-                    >
-                      <div className="mb-3 p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                        <Icon className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-sm font-medium text-center">{industry.label}</span>
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-            {children}
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+        )}
+        {children}
+      </main>
+    </div>
   );
 } 

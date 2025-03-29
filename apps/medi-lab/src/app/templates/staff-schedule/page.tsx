@@ -62,7 +62,6 @@ const timeSlots = Array.from({ length: 8 }, (_, i) => i + 10); // 10:00 to 17:00
 
 export default function StaffSchedulePage() {
   return (
-    <DashboardLayout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Staff schedule</h1>
@@ -152,6 +151,5 @@ export default function StaffSchedulePage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
   );
 } 

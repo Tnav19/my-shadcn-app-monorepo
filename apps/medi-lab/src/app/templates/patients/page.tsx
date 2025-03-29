@@ -42,7 +42,6 @@ export default function PatientsPage() {
   ];
 
   return (
-    <DashboardLayout>
       <div>
         <header className="bg-white border-b p-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Patients directory</h1>
@@ -86,6 +85,5 @@ export default function PatientsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
   );
 } 
