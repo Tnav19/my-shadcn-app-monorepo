@@ -70,7 +70,7 @@ This Turborepo has some additional tools already setup for you:
 
 #### Adding components
 
-To add components to your app, run the following command at the root of your `web` app:
+To add components to your app, run the following command at the root of your `packages/ui` app:
 
 ```bash
 pnpm dlx shadcn@latest add button -c apps/web
