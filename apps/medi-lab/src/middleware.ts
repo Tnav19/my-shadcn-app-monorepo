@@ -8,13 +8,11 @@ const isStandalone = process.env.PORT === '3001';
 const gatewayMiddleware = createGatewayMiddleware({
   apps: {
     "medi-lab": {
-      loginPath: isStandalone ? "/login" : "/login",
-      basePath: isStandalone ? "" : "",
+      loginPath: "/login",
+      basePath: "/medi-lab",
       port: 3001,
       authRequired: true,
-      excludePaths: isStandalone 
-        ? ["/login", "/templates"]
-        : ["/login", "/templates"]
+      excludePaths: ["/login", "/api/auth", "/_next", "/templates"]
     }
   },
   defaultApp: "medi-lab"
@@ -24,20 +22,30 @@ const gatewayMiddleware = createGatewayMiddleware({
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // In standalone mode, handle routes without the  prefix
+  // In standalone mode, handle routes without the prefix
   if (isStandalone) {
     // Check if user is authenticated
-    const isAuthenticated = request.cookies.has('medi-lab-auth');
+    const authToken = request.cookies.get('auth-token');
     const isLoginPage = pathname === '/login';
+    const isPublicPath = pathname.startsWith('/api/auth') || 
+                        pathname.startsWith('/_next') || 
+                        pathname.startsWith('/templates');
 
-    // If not authenticated and trying to access protected route, redirect to login
-    if (!isAuthenticated && !isLoginPage && !pathname.startsWith('/templates')) {
-      return NextResponse.redirect(new URL('/login', request.url));
+    // Allow public paths
+    if (isPublicPath) {
+      return NextResponse.next();
     }
 
-    // If authenticated and trying to access login page, redirect to dashboard
-    if (isAuthenticated && isLoginPage) {
-      return NextResponse.redirect(new URL('/templates/dashboard', request.url));
+    // If not authenticated and trying to access protected route, redirect to login
+    if (!authToken && !isLoginPage) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('from', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // If authenticated and trying to access login page, redirect to templates dashboard
+    if (authToken && isLoginPage) {
+      return NextResponse.redirect(new URL('/medi-lab/templates/dashboard', request.url));
     }
 
     return NextResponse.next();
@@ -48,5 +56,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ]
 }; 

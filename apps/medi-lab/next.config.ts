@@ -1,7 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: ["@repo/ui"],
+  basePath: "/medi-lab",
+  async rewrites() {
+    return [
+      // Handle all routes
+      {
+        source: '/:path*',
+        destination: '/:path*',
+      }
+    ];
+  },
 };
 
 export default nextConfig;

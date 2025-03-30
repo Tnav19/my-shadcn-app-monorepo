@@ -3,7 +3,6 @@
 import { Button } from "@repo/ui/components/button";
 import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
-import DashboardLayout from "../components/DashboardLayout";
 import Link from "next/link";
 
 export default function PatientsPage() {

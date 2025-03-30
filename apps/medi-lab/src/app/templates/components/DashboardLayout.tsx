@@ -1,22 +1,21 @@
 "use client";
 
-import { Button } from "@repo/ui/components/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
-import { MainLayout } from "@repo/ui/layouts/MainLayout";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Button } from "@repo/ui/components/button";
 import {
-  Calendar,
-  Users,
-  Clock,
-  Layout,
-  UserPlus,
   Building2,
+  Calendar,
+  Clock,
+  HelpCircle,
+  Layout,
+  LogOut,
   Package,
   Settings,
-  HelpCircle,
-  LogOut,
+  UserPlus,
+  Users,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -28,17 +27,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const handleLogout = () => {
     // Add logout logic here
-    document.cookie = "medi-lab-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.push("/login");
   };
 
   return (
-    <MainLayout
-      showIndustries={false}
-      isAuthenticated={true}
-      appName="MediLab"
-      loginPath="/login"
-    >
       <div className="flex h-[calc(100vh-4rem)] bg-gray-50">
         {/* Sidebar */}
         <div className="w-64 bg-white border-r">
@@ -179,6 +172,5 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </main>
         </div>
       </div>
-    </MainLayout>
   );
 } 

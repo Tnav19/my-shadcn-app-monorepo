@@ -1,9 +1,8 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import DashboardLayout from "../components/DashboardLayout";
 import { Avatar } from "@repo/ui/components/avatar";
 import { Button } from "@repo/ui/components/button";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import Image from "next/image";
 
 // Mock data for staff schedule

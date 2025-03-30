@@ -4,11 +4,11 @@ const middleware = createGatewayMiddleware({
   defaultApp: 'company-intranet',
   apps: {
     'medi-lab': {
-      loginPath: '/login',
-      basePath: '',
+      loginPath: '/medi-lab/login',
+      basePath: '/medi-lab',
       port: 3001,
       authRequired: true,
-      excludePaths: ['/login']
+      excludePaths: ['/medi-lab/login', '/medi-lab/api/auth', '/medi-lab/_next']
     },
     'safe-aq': {
       loginPath: '/safe-aq/login',
@@ -21,7 +21,7 @@ const middleware = createGatewayMiddleware({
       basePath: '/',
       port: 3000,
       authRequired: false,
-      excludePaths: ['/login']
+      excludePaths: ['/login', '/api/auth', '/_next']
     }
   }
 });
