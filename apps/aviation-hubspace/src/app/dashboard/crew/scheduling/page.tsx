@@ -1,48 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import { Badge } from '@repo/ui/components/badge';
+import { Button } from '@repo/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
+import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { 
-  Calendar,
+import {
   Clock,
-  Users,
+  Filter,
+  Plane,
+  Plus,
   RefreshCw,
   Search,
-  Filter,
-  Plus,
-  AlertCircle,
-  FileText,
-  ClipboardList,
-  ClipboardCheck,
-  ClipboardX,
-  Settings,
-  ArrowUpRight,
-  ArrowDownRight,
-  AlertTriangle,
-  XCircle,
-  BarChart,
-  Gauge,
-  MapPin,
-  Activity,
-  Award,
-  Target,
-  BookMarked,
-  BookCheck,
-  Plane,
-  PlaneTakeoff,
-  PlaneLanding,
   User,
-  UserCheck,
-  UserX,
-  Timer,
-  CalendarDays,
-  CalendarCheck,
-  CalendarX
+  Users
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface Flight {
   id: string;

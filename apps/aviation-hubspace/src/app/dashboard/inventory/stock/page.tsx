@@ -1,34 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import { Badge } from '@repo/ui/components/badge';
+import { Button } from '@repo/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
+import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { 
-  Package, 
-  Search, 
-  Plus, 
-  Filter, 
+import {
   AlertCircle,
-  CheckCircle2,
-  Settings,
-  PackagePlus,
-  PackageMinus,
-  PackageSearch,
-  History,
   AlertTriangle,
-  ArrowUpRight,
-  ArrowDownRight,
-  Boxes,
-  ClipboardList,
-  BarChart3,
-  TrendingUp,
-  TrendingDown,
-  Clock,
-  DollarSign
+  CheckCircle2,
+  DollarSign,
+  Filter,
+  PackagePlus,
+  Search,
+  Settings
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface StockItem {
   id: string;

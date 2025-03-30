@@ -1,41 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Button } from '@repo/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Input } from '@repo/ui/components/input';
-import { Badge } from '@repo/ui/components/badge';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { 
-  DollarSign, 
-  Search, 
-  Filter, 
+import {
+  DollarSign,
+  Filter,
+  Percent,
+  Search,
   Settings,
   TrendingUp,
-  TrendingDown,
-  CreditCard,
-  Receipt,
-  Plane,
-  Users,
-  Calendar,
-  BarChart3,
-  PieChart,
-  LineChart,
-  ArrowUpRight,
-  ArrowDownRight,
-  Percent,
-  Target,
-  Wallet,
-  PiggyBank,
-  Building2,
-  Globe,
-  Clock,
-  CalendarDays,
-  CalendarCheck,
-  CalendarX,
-  UserCheck,
-  UserX
+  Users
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface RevenueStream {
   id: string;

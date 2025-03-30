@@ -1,50 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import { Badge } from '@repo/ui/components/badge';
+import { Button } from '@repo/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
+import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { 
-  Calendar, 
-  Search, 
-  Plus, 
-  Filter, 
+import {
   CheckCircle2,
-  XCircle,
   Clock,
+  CreditCard,
+  Filter,
+  Search,
   Settings,
   UserPlus,
-  Users,
-  Plane,
-  CalendarDays,
-  CreditCard,
-  Mail,
-  Phone,
-  MapPin,
-  Clock3,
-  AlertCircle,
-  CheckCircle,
-  XCircle2,
-  Clock4,
-  UserCheck,
-  UserX,
-  PlaneTakeoff,
-  PlaneLanding,
-  CalendarCheck,
-  CalendarX,
-  CreditCardCheck,
-  CreditCardX,
-  MailCheck,
-  MailX,
-  PhoneCheck,
-  PhoneX,
-  MapPinCheck,
-  MapPinX,
-  ClockCheck,
-  ClockX
+  XCircle
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface Passenger {
   id: string;

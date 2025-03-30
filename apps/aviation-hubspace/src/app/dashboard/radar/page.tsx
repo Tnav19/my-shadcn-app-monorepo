@@ -1,42 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Button } from '@repo/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Input } from '@repo/ui/components/input';
-import { Badge } from '@repo/ui/components/badge';
+import { Label } from '@repo/ui/components/label';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
 import { Switch } from '@repo/ui/components/switch';
-import { Label } from '@repo/ui/components/label';
-import { 
-  Plane,
-  Radar,
-  Cloud,
-  CloudRain,
-  CloudLightning,
-  CloudSnow,
-  Sun,
-  Wind,
-  Thermometer,
-  Droplets,
+import {
+  Clock,
   Eye,
-  AlertTriangle,
   MapPin,
+  Maximize,
+  Plane,
   RefreshCw,
   Search,
-  Filter,
-  Calendar,
-  Clock,
-  ArrowUpRight,
-  ArrowDownRight,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
+  Wind,
   ZoomIn,
-  ZoomOut,
-  Maximize,
-  Minimize
+  ZoomOut
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface Flight {
   id: string;

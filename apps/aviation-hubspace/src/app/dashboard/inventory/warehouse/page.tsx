@@ -1,34 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import { Badge } from '@repo/ui/components/badge';
+import { Button } from '@repo/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
+import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { 
-  Warehouse, 
-  Search, 
-  Plus, 
-  Filter, 
-  Package,
-  Clock,
-  Calendar,
-  Award,
+import {
   AlertCircle,
-  CheckCircle2,
-  Settings,
-  Boxes,
-  Truck,
-  PackageCheck,
-  PackageX,
-  DollarSign,
-  MapPin,
-  ArrowRight,
-  ArrowLeft,
   BarChart3,
-  Users
+  Boxes,
+  CheckCircle2,
+  Filter,
+  Search,
+  Settings,
+  Warehouse
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface StorageLocation {
   id: string;

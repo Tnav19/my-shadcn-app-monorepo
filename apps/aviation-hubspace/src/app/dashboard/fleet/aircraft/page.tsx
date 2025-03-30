@@ -1,42 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import { Badge } from '@repo/ui/components/badge';
+import { Button } from '@repo/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
+import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { 
-  Plane,
-  PlaneLanding,
-  PlaneTakeoff,
-  PlaneIcon,
-  RefreshCw,
-  Search,
-  Filter,
-  Plus,
-  AlertCircle,
-  FileText,
-  ClipboardList,
-  ClipboardCheck,
-  ClipboardX,
-  Settings,
-  Clock,
-  Calendar,
-  ArrowUpRight,
-  ArrowDownRight,
+import {
+  Activity,
   AlertTriangle,
-  CheckCircle,
-  XCircle,
-  BarChart,
+  Clock,
+  Filter,
   Gauge,
-  Fuel,
-  Wrench,
   MapPin,
-  Users,
-  Package,
-  Activity
+  Plus,
+  RefreshCw,
+  Search
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface Aircraft {
   id: string;

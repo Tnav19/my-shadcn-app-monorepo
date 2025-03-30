@@ -1,41 +1,23 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import { Badge } from '@repo/ui/components/badge';
+import { Button } from '@repo/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
+import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { 
-  GraduationCap,
+import {
+  BookCheck,
   BookOpen,
-  CheckCircle,
-  AlertCircle,
   Clock,
-  Calendar,
-  Users,
+  Filter,
+  GraduationCap,
+  MapPin,
+  Plus,
   RefreshCw,
   Search,
-  Filter,
-  Plus,
-  FileText,
-  ClipboardList,
-  ClipboardCheck,
-  ClipboardX,
-  Settings,
-  ArrowUpRight,
-  ArrowDownRight,
-  AlertTriangle,
-  XCircle,
-  BarChart,
-  Gauge,
-  MapPin,
-  Activity,
-  Award,
-  Target,
-  BookMarked,
-  BookCheck
+  Users
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface TrainingModule {
   id: string;

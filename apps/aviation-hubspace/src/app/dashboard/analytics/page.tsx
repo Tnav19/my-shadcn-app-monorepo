@@ -1,47 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Button } from '@repo/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Input } from '@repo/ui/components/input';
-import { Badge } from '@repo/ui/components/badge';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { 
-  BarChart3, 
-  Search, 
-  Filter, 
-  Settings,
-  TrendingUp,
-  TrendingDown,
-  Users,
-  Plane,
-  Calendar,
-  DollarSign,
-  Percent,
-  Target,
+import {
+  BarChart3,
   Clock,
-  CalendarDays,
-  CalendarCheck,
-  CalendarX,
-  UserCheck,
-  UserX,
-  ArrowUpRight,
-  ArrowDownRight,
-  LineChart,
-  PieChart,
-  Activity,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  Clock3,
-  Clock4,
-  Clock5,
-  Clock6,
-  Clock7,
-  Clock8,
-  Clock9,
-  Clock10
+  Filter,
+  Plane,
+  Search,
+  Users
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface PerformanceMetric {
   id: string;

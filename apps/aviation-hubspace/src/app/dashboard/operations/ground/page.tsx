@@ -1,27 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import { Badge } from '@repo/ui/components/badge';
+import { Button } from '@repo/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
+import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { 
-  Building2, 
-  Search, 
-  Plus, 
-  Filter, 
-  Users,
+import {
+  Building2,
+  Filter,
   Luggage,
   Plane,
+  Plus,
+  Search,
   Settings,
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  MapPin,
-  Truck,
   Wrench
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface Gate {
   id: string;

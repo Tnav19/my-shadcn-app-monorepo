@@ -1,45 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
-import { Badge } from '@repo/ui/components/badge';
-import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { 
-  FileText, 
-  Search, 
-  Filter, 
-  Download,
-  FileSpreadsheet,
+import {
   FilePieChart,
-  FileBarChart,
-  FileLineChart,
-  FileCheck,
-  FileClock,
-  FileAlert,
-  FileWarning,
-  FileX,
-  Calendar,
-  Users,
-  Plane,
-  DollarSign,
-  Percent,
-  Target,
-  Clock,
-  CalendarDays,
-  CalendarCheck,
-  CalendarX,
-  UserCheck,
-  UserX,
-  ArrowUpRight,
-  ArrowDownRight,
-  LineChart,
-  PieChart,
-  Activity,
-  AlertCircle,
-  CheckCircle,
-  XCircle
+  FileSpreadsheet,
+  FileText
 } from 'lucide-react';
 
 interface Report {

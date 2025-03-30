@@ -1,39 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Button } from '@repo/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Input } from '@repo/ui/components/input';
 import { Label } from '@repo/ui/components/label';
-import { Switch } from '@repo/ui/components/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui/components/select';
+import { Switch } from '@repo/ui/components/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/components/tabs';
-import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { 
-  Settings,
+import {
   Bell,
-  Globe,
-  Palette,
-  Shield,
   Database,
-  Mail,
-  BellRing,
-  BellOff,
-  Globe2,
-  Palette2,
-  ShieldCheck,
-  Database2,
-  Mail2,
-  Save,
-  RefreshCw,
-  Trash2,
-  User,
-  Lock,
   Key,
-  AlertCircle,
-  CheckCircle,
-  XCircle
+  Mail,
+  Palette,
+  RefreshCw,
+  Save,
+  Shield,
+  User
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface UserPreferences {
   theme: 'light' | 'dark' | 'system';
