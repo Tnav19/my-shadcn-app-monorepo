@@ -32,7 +32,20 @@ export default function Map() {
       altitude: '35,000 ft',
       speed: '450 kts',
     },
-    // Add more sample aircraft here
+    {
+      id: '2',
+      position: [34.0522, -118.2437],
+      callsign: 'N67890',
+      altitude: '28,000 ft',
+      speed: '420 kts',
+    },
+    {
+      id: '3',
+      position: [41.8781, -87.6298],
+      callsign: 'N24680',
+      altitude: '32,000 ft',
+      speed: '430 kts',
+    },
   ]);
 
   useEffect(() => {

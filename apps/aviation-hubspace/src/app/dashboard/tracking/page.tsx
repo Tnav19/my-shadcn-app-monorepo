@@ -14,6 +14,7 @@ import {
   Search,
 } from 'lucide-react';
 import { useState } from 'react';
+import ClientMap from '@/components/ClientMap';
 
 // Mock data for aircraft
 const aircraft = [
@@ -61,7 +62,7 @@ export default function TrackingPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Aircraft Tracking</h1>
         <div className="flex items-center space-x-4">
@@ -132,9 +133,9 @@ export default function TrackingPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {/* Map Placeholder */}
-              <div className="h-[400px] bg-gray-100 rounded-lg flex items-center justify-center">
-                <p className="text-gray-500">Map Integration Coming Soon</p>
+              {/* Map */}
+              <div className="h-[400px] rounded-lg overflow-hidden">
+                <ClientMap />
               </div>
 
               {/* Flight Details */}
