@@ -12,9 +12,21 @@ import {
   MapPin,
   Plane,
   Search,
+  RefreshCw,
 } from 'lucide-react';
-import { useState } from 'react';
-import ClientMap from '@/components/ClientMap';
+import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Dynamically import the ClientMap component with no SSR
+const ClientMap = dynamic(() => import('@/components/ClientMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[400px] rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+      <div className="animate-pulse text-gray-500">Loading map...</div>
+    </div>
+  ),
+});
 
 // Mock data for aircraft
 const aircraft = [
@@ -32,13 +44,13 @@ const aircraft = [
   {
     id: 'BA456',
     type: 'Airbus A320',
-    status: 'maintenance',
-    altitude: '0 ft',
-    speed: '0 knots',
+    status: 'in-flight',
+    altitude: '33,000 ft',
+    speed: '440 knots',
     location: 'London Heathrow',
     destination: 'Paris, France',
-    eta: 'Delayed',
-    alerts: ['Scheduled maintenance required'],
+    eta: '45m',
+    alerts: [],
   },
   {
     id: 'AF789',
@@ -56,15 +68,31 @@ const aircraft = [
 export default function TrackingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAircraft, setSelectedAircraft] = useState(aircraft[0]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const filteredAircraft = aircraft.filter((a) =>
     a.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    // Simulate data refresh
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1000);
+  };
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Aircraft Tracking</h1>
+        <motion.h1 
+          className="text-3xl font-bold"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          Aircraft Tracking
+        </motion.h1>
         <div className="flex items-center space-x-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
@@ -75,7 +103,12 @@ export default function TrackingPage() {
               className="pl-9"
             />
           </div>
-          <Button>Refresh Data</Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button onClick={handleRefresh} className="relative">
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh Data
+            </Button>
+          </motion.div>
         </div>
       </div>
 
@@ -87,41 +120,58 @@ export default function TrackingPage() {
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[600px]">
-              <div className="space-y-2">
-                {filteredAircraft.map((a) => (
-                  <div
-                    key={a.id}
-                    className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-colors ${
-                      selectedAircraft.id === a.id
-                        ? 'bg-gray-100 border-gray-300'
-                        : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => setSelectedAircraft(a)}
-                  >
-                    <div className="flex items-center space-x-4">
-                      <Plane
-                        className={`h-6 w-6 ${
-                          a.status === 'in-flight'
-                            ? 'text-blue-500'
-                            : 'text-yellow-500'
-                        }`}
-                      />
-                      <div>
-                        <h3 className="font-medium">{a.id}</h3>
-                        <p className="text-sm text-gray-500">{a.type}</p>
+              <AnimatePresence>
+                <div className="space-y-2">
+                  {filteredAircraft.map((a) => (
+                    <motion.div
+                      key={a.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all duration-300 hover:shadow-lg ${
+                        selectedAircraft.id === a.id
+                          ? 'bg-primary/5 border-primary/20 shadow-lg'
+                          : 'hover:bg-gray-50 hover:border-gray-300'
+                      }`}
+                      onClick={() => setSelectedAircraft(a)}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <motion.div
+                          animate={{
+                            rotate: a.status === 'in-flight' ? 360 : 0,
+                          }}
+                          transition={{
+                            duration: 20,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
+                        >
+                          <Plane
+                            className={`h-6 w-6 ${
+                              a.status === 'in-flight'
+                                ? 'text-primary'
+                                : 'text-yellow-500'
+                            }`}
+                          />
+                        </motion.div>
+                        <div>
+                          <h3 className="font-medium">{a.id}</h3>
+                          <p className="text-sm text-gray-500">{a.type}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge
-                        variant={a.status === 'in-flight' ? 'default' : 'secondary'}
-                      >
-                        {a.status}
-                      </Badge>
-                      <ChevronRight className="h-4 w-4 text-gray-400" />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge
+                          variant={a.status === 'in-flight' ? 'default' : 'secondary'}
+                          className="animate-pulse"
+                        >
+                          {a.status}
+                        </Badge>
+                        <ChevronRight className="h-4 w-4 text-gray-400" />
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </AnimatePresence>
             </ScrollArea>
           </CardContent>
         </Card>
@@ -135,11 +185,22 @@ export default function TrackingPage() {
             <div className="space-y-6">
               {/* Map */}
               <div className="h-[400px] rounded-lg overflow-hidden">
-                <ClientMap />
+                <ClientMap 
+                  selectedAircraftId={selectedAircraft.id}
+                  onAircraftClick={(id) => {
+                    const aircraft = filteredAircraft.find(a => a.id === id);
+                    if (aircraft) setSelectedAircraft(aircraft);
+                  }}
+                />
               </div>
 
               {/* Flight Details */}
-              <div className="grid grid-cols-2 gap-4">
+              <motion.div 
+                className="grid grid-cols-2 gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2">
                     <MapPin className="h-4 w-4 text-gray-500" />
@@ -173,25 +234,35 @@ export default function TrackingPage() {
                     <p className="font-medium">{selectedAircraft.eta}</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Alerts */}
-              {selectedAircraft.alerts.length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="font-medium">Active Alerts</h3>
-                  <div className="space-y-2">
-                    {selectedAircraft.alerts.map((alert, index) => (
-                      <div
-                        key={index}
-                        className="flex items-start space-x-2 p-3 rounded-lg bg-yellow-50 border border-yellow-200"
-                      >
-                        <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
-                        <p className="text-sm text-yellow-800">{alert}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <AnimatePresence>
+                {selectedAircraft.alerts.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-2"
+                  >
+                    <h3 className="font-medium">Active Alerts</h3>
+                    <div className="space-y-2">
+                      {selectedAircraft.alerts.map((alert, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20 }}
+                          className="flex items-start space-x-2 p-3 rounded-lg bg-yellow-50 border border-yellow-200"
+                        >
+                          <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5 animate-pulse" />
+                          <p className="text-sm text-yellow-800">{alert}</p>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </CardContent>
         </Card>
