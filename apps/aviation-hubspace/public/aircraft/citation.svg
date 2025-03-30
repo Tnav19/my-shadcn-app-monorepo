@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+  <path d="M250 200 C350 170 450 170 550 200 L580 190 C450 140 350 140 220 190 Z" fill="#14255a"/>
+  <path d="M220 190 L200 210 L550 210 L580 190 L220 190" fill="#14255a"/>
+  <path d="M300 190 L320 170 L500 170 L520 190" fill="#14255a"/>
+  <path d="M400 210 L410 230 L430 230 L420 210" fill="#14255a"/>
+  <path d="M220 190 L240 180 L560 180 L580 190" fill="#ffffff" fill-opacity="0.1"/>
+</svg> 
