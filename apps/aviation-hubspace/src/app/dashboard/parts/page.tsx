@@ -1,10 +1,9 @@
 import { Button } from '@repo/ui/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Input } from '@repo/ui/components/input';
-import { Label } from '@repo/ui/components/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui/components/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@repo/ui/components/table';
-import { Tool, Plus, Search, Filter } from 'lucide-react';
+import { Filter, Plus, Search, Wrench } from 'lucide-react';
 
 const parts = [
   {
@@ -111,7 +110,7 @@ export default function PartsManagementPage() {
                   </TableCell>
                   <TableCell>
                     <Button variant="ghost" size="sm">
-                      <Tool className="h-4 w-4" />
+                      <Wrench className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>

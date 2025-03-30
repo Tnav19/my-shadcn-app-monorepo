@@ -6,7 +6,7 @@
     "build": "turbo build",
     "clean": "turbo clean",
     "dev": "turbo dev",
-    "dev:all": "pnpm --filter company-intranet --filter medi-lab --parallel dev",
+    "dev:all": "pnpm --filter company-intranet --filter medi-lab --filter aviation-hubspace --parallel dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "test": "turbo test"

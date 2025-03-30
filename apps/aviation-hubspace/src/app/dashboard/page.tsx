@@ -1,6 +1,8 @@
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/components/tabs';
-import { Plane, Tool, ShoppingCart, Map, Building2, Settings, Users, DollarSign, AlertCircle } from 'lucide-react';
+import { Building2, Plane, Users, DollarSign, ShoppingCart, AlertCircle, Wrench } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const data = [
@@ -107,7 +109,7 @@ export default function DashboardPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Parts Inventory</CardTitle>
-                <Tool className="h-4 w-4 text-muted-foreground" />
+                <Wrench className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">1,234</div>

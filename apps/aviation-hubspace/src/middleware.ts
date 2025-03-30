@@ -2,20 +2,20 @@ import { createGatewayMiddleware } from "@repo/ui/middleware/middleware";
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Check if we're running in standalone mode (port 3001)
-const isStandalone = process.env.PORT === '3001';
+// Check if we're running in standalone mode (port 3002)
+const isStandalone = process.env.PORT === '3002';
 
 const gatewayMiddleware = createGatewayMiddleware({
   apps: {
-    "medi-lab": {
+    "aviation-hubspace": {
       loginPath: "/login",
-      basePath: "/medi-lab",
-      port: 3001,
+      basePath: "/aviation-hubspace",
+      port: 3002,
       authRequired: true,
-      excludePaths: ["/login", "/api/auth", "/_next", "/templates"]
+      excludePaths: ["/login", "/api/auth", "/_next", "/dashboard"]
     }
   },
-  defaultApp: "medi-lab"
+  defaultApp: "aviation-hubspace"
 });
 
 // Create a wrapper middleware that handles both standalone and gateway modes
@@ -29,7 +29,7 @@ export function middleware(request: NextRequest) {
     const isLoginPage = pathname === '/login';
     const isPublicPath = pathname.startsWith('/api/auth') || 
                         pathname.startsWith('/_next') || 
-                        pathname.startsWith('/templates');
+                        pathname.startsWith('/dashboard');
 
     // Allow public paths
     if (isPublicPath) {
@@ -43,9 +43,9 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // If authenticated and trying to access login page, redirect to templates dashboard
+    // If authenticated and trying to access login page, redirect to dashboard
     if (authToken && isLoginPage) {
-      return NextResponse.redirect(new URL('/medi-lab/templates/dashboard', request.url));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     return NextResponse.next();

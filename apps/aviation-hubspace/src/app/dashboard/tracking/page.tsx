@@ -3,10 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/ca
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui/components/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@repo/ui/components/table';
 import { Plane, MapPin, Clock, AlertCircle } from 'lucide-react';
-import dynamic from 'next/dynamic';
-
-// Dynamically import the map component to avoid SSR issues
-const Map = dynamic(() => import('@/components/Map'), { ssr: false });
+import ClientMap from '@/components/ClientMap';
 
 const flights = [
   {
@@ -64,7 +61,7 @@ export default function AircraftTrackingPage() {
           </CardHeader>
           <CardContent>
             <div className="h-[600px] w-full">
-              <Map />
+              <ClientMap />
             </div>
           </CardContent>
         </Card>
@@ -98,24 +95,24 @@ export default function AircraftTrackingPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                        flight.status === 'In Flight' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {flight.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
                       <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {flight.eta}
+                        {flight.status === 'In Flight' ? (
+                          <MapPin className="h-4 w-4 mr-2 text-green-500" />
+                        ) : (
+                          <Clock className="h-4 w-4 mr-2 text-yellow-500" />
+                        )}
+                        <span>{flight.status}</span>
                       </div>
                     </TableCell>
+                    <TableCell>{flight.eta}</TableCell>
                     <TableCell>
-                      {flight.alerts.length > 0 && (
+                      {flight.alerts.length > 0 ? (
                         <div className="flex items-center text-red-500">
                           <AlertCircle className="h-4 w-4 mr-1" />
-                          {flight.alerts.length} alert(s)
+                          <span>{flight.alerts.join(', ')}</span>
                         </div>
+                      ) : (
+                        <span className="text-green-500">No Alerts</span>
                       )}
                     </TableCell>
                   </TableRow>

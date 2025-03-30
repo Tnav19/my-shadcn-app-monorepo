@@ -1,8 +1,10 @@
+'use client';
+
 import { Button } from '@repo/ui/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Progress } from '@repo/ui/components/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@repo/ui/components/table';
-import { Factory, CheckCircle, AlertCircle, Clock, Tool } from 'lucide-react';
+import { Factory, CheckCircle, AlertCircle, Clock, Wrench } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const productionData = [
@@ -82,7 +84,7 @@ export default function ManufacturingPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Work Orders</CardTitle>
-            <Tool className="h-4 w-4 text-muted-foreground" />
+            <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">12</div>

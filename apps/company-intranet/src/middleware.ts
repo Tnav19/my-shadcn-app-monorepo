@@ -10,10 +10,17 @@ const middleware = createGatewayMiddleware({
       authRequired: true,
       excludePaths: ['/medi-lab/login', '/medi-lab/api/auth', '/medi-lab/_next']
     },
+    'aviation-hubspace': {
+      loginPath: '/aviation-hubspace/login',
+      basePath: '/aviation-hubspace',
+      port: 3002,
+      authRequired: true,
+      excludePaths: ['/aviation-hubspace/login', '/aviation-hubspace/api/auth', '/aviation-hubspace/_next', '/aviation-hubspace/dashboard']
+    },
     'safe-aq': {
       loginPath: '/safe-aq/login',
       basePath: '/safe-aq',
-      port: 3002,
+      port: 3003,
       authRequired: true,
     },
     'company-intranet': {
