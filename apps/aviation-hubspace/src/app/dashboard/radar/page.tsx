@@ -19,6 +19,17 @@ import {
   ZoomOut
 } from 'lucide-react';
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the RadarView component with no SSR
+const RadarView = dynamic(() => import('@/components/RadarView'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[600px] rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+      <div className="animate-pulse text-gray-500">Loading radar view...</div>
+    </div>
+  ),
+});
 
 interface Flight {
   id: string;
@@ -186,11 +197,13 @@ export default function RadarPage() {
               <CardTitle>Flight Radar</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="relative h-[600px] border rounded-lg bg-muted">
-                {/* Placeholder for actual radar visualization */}
-                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                  Radar Visualization
-                </div>
+              <div className="relative h-[600px] border rounded-lg overflow-hidden bg-gray-900">
+                <RadarView 
+                  flights={filteredFlights}
+                  selectedFlightId={selectedFlight || undefined}
+                  onFlightClick={setSelectedFlight}
+                  zoom={zoom}
+                />
                 <div className="absolute bottom-4 right-4 flex space-x-2">
                   <Button variant="outline" size="icon" onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}>
                     <ZoomOut className="h-4 w-4" />
@@ -256,8 +269,8 @@ export default function RadarPage() {
                     {filteredFlights.map((flight) => (
                       <div
                         key={flight.id}
-                        className={`p-4 border rounded-lg hover:bg-accent cursor-pointer ${
-                          selectedFlight === flight.id ? 'bg-accent' : ''
+                        className={`p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors ${
+                          selectedFlight === flight.id ? 'bg-accent border-primary' : ''
                         }`}
                         onClick={() => setSelectedFlight(flight.id)}
                       >
