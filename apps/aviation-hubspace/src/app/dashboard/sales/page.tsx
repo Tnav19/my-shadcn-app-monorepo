@@ -1,184 +1,243 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@repo/ui/components/table';
-import { ShoppingCart, TrendingUp, DollarSign, Users } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ScrollArea } from '@repo/ui/components/scroll-area';
+import { Button } from '@repo/ui/components/button';
+import { Input } from '@repo/ui/components/input';
+import { Badge } from '@repo/ui/components/badge';
+import {
+  Search,
+  ShoppingCart,
+  AlertTriangle,
+  Plus,
+  Filter,
+  ChevronRight,
+  CheckCircle,
+  Clock,
+  DollarSign,
+} from 'lucide-react';
 
-const salesData = [
-  { name: 'Jan', revenue: 4000, orders: 24 },
-  { name: 'Feb', revenue: 3000, orders: 18 },
-  { name: 'Mar', revenue: 5000, orders: 30 },
-  { name: 'Apr', revenue: 4500, orders: 27 },
-  { name: 'May', revenue: 6000, orders: 36 },
-  { name: 'Jun', revenue: 5500, orders: 33 },
-];
-
+// Mock data for sales orders
 const orders = [
   {
     id: 'ORD001',
-    customer: 'Airline A',
-    product: 'Engine Parts',
-    amount: 250000,
-    status: 'Delivered',
-    date: '2024-03-15',
-    priority: 'High',
+    customer: 'Global Airlines',
+    product: 'Boeing 737-800',
+    status: 'processing',
+    amount: '$85,000,000',
+    orderDate: '2024-03-15',
+    deliveryDate: '2024-06-15',
+    priority: 'high',
+    items: 1,
+    alerts: ['Payment verification pending'],
   },
   {
     id: 'ORD002',
-    customer: 'Airline B',
-    product: 'Landing Gear',
-    amount: 180000,
-    status: 'Processing',
-    date: '2024-03-14',
-    priority: 'Medium',
+    customer: 'Regional Air',
+    product: 'Airbus A320',
+    status: 'completed',
+    amount: '$92,000,000',
+    orderDate: '2024-03-10',
+    deliveryDate: '2024-06-10',
+    priority: 'medium',
+    items: 1,
+    alerts: [],
   },
   {
     id: 'ORD003',
-    customer: 'Airline C',
-    product: 'Avionics System',
-    amount: 320000,
-    status: 'Pending',
-    date: '2024-03-13',
-    priority: 'High',
+    customer: 'Cargo Express',
+    product: 'Boeing 777-300ER',
+    status: 'pending',
+    amount: '$145,000,000',
+    orderDate: '2024-03-20',
+    deliveryDate: '2024-09-20',
+    priority: 'low',
+    items: 1,
+    alerts: ['Contract review required'],
   },
 ];
 
 export default function SalesPage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState(orders[0]);
+
+  const filteredOrders = orders.filter((o) =>
+    o.customer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Sales & Distribution</h2>
-        <Button>
-          <ShoppingCart className="mr-2 h-4 w-4" />
-          New Order
-        </Button>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$2.8M</div>
-            <p className="text-xs text-muted-foreground">+12% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Orders</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">45</div>
-            <p className="text-xs text-muted-foreground">in processing</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Growth Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+8.2%</div>
-            <p className="text-xs text-muted-foreground">vs last quarter</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">28</div>
-            <p className="text-xs text-muted-foreground">worldwide</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Sales Performance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={salesData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Line
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#8884d8"
-                  name="Revenue ($)"
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="orders"
-                  stroke="#82ca9d"
-                  name="Orders"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+        <h1 className="text-3xl font-bold">Sales & Orders</h1>
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+            <Input
+              placeholder="Search orders..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
           </div>
-        </CardContent>
-      </Card>
+          <Button variant="outline">
+            <Filter className="h-4 w-4 mr-2" />
+            Filter
+          </Button>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            New Order
+          </Button>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Priority</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>{order.id}</TableCell>
-                  <TableCell>{order.customer}</TableCell>
-                  <TableCell>{order.product}</TableCell>
-                  <TableCell>${order.amount.toLocaleString()}</TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                      order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
-                      order.status === 'Processing' ? 'bg-blue-100 text-blue-700' :
-                      'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>{order.date}</TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                      order.priority === 'High' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {order.priority}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        {/* Orders List */}
+        <Card className="col-span-2">
+          <CardHeader>
+            <CardTitle>Orders</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[600px]">
+              <div className="space-y-2">
+                {filteredOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-colors ${
+                      selectedOrder.id === order.id
+                        ? 'bg-gray-100 border-gray-300'
+                        : 'hover:bg-gray-50'
+                    }`}
+                    onClick={() => setSelectedOrder(order)}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <ShoppingCart
+                        className={`h-6 w-6 ${
+                          order.status === 'completed'
+                            ? 'text-green-500'
+                            : order.status === 'processing'
+                            ? 'text-blue-500'
+                            : 'text-gray-500'
+                        }`}
+                      />
+                      <div>
+                        <h3 className="font-medium">{order.customer}</h3>
+                        <p className="text-sm text-gray-500">{order.id}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge
+                        variant={
+                          order.status === 'completed'
+                            ? 'default'
+                            : order.status === 'processing'
+                            ? 'secondary'
+                            : 'outline'
+                        }
+                      >
+                        {order.status}
+                      </Badge>
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+
+        {/* Order Details */}
+        <Card className="col-span-5">
+          <CardHeader>
+            <CardTitle>Order Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Order Summary */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Customer</p>
+                    <p className="font-medium">{selectedOrder.customer}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Product</p>
+                    <p className="font-medium">{selectedOrder.product}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Order Date</p>
+                    <p className="font-medium">{selectedOrder.orderDate}</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Amount</p>
+                    <div className="flex items-center space-x-2">
+                      <DollarSign className="h-4 w-4 text-green-500" />
+                      <p className="font-medium">{selectedOrder.amount}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Delivery Date</p>
+                    <p className="font-medium">{selectedOrder.deliveryDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Priority</p>
+                    <Badge
+                      variant={
+                        selectedOrder.priority === 'high'
+                          ? 'destructive'
+                          : selectedOrder.priority === 'medium'
+                          ? 'secondary'
+                          : 'outline'
+                      }
+                    >
+                      {selectedOrder.priority}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Information */}
+              <div className="flex items-center space-x-2">
+                {selectedOrder.status === 'completed' ? (
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                ) : selectedOrder.status === 'processing' ? (
+                  <Clock className="h-5 w-5 text-blue-500" />
+                ) : (
+                  <ShoppingCart className="h-5 w-5 text-gray-500" />
+                )}
+                <span className="capitalize font-medium">{selectedOrder.status}</span>
+              </div>
+
+              {/* Alerts */}
+              {selectedOrder.alerts.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="font-medium">Active Alerts</h3>
+                  <div className="space-y-2">
+                    {selectedOrder.alerts.map((alert, index) => (
+                      <div
+                        key={index}
+                        className="flex items-start space-x-2 p-3 rounded-lg bg-yellow-50 border border-yellow-200"
+                      >
+                        <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
+                        <p className="text-sm text-yellow-800">{alert}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex space-x-4">
+                <Button>Update Status</Button>
+                <Button variant="outline">View Contract</Button>
+                <Button variant="outline">Generate Invoice</Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 } 

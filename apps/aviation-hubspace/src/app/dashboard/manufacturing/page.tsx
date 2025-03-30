@@ -1,184 +1,248 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Progress } from '@repo/ui/components/progress';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@repo/ui/components/table';
-import { Factory, CheckCircle, AlertCircle, Clock, Wrench } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ScrollArea } from '@repo/ui/components/scroll-area';
+import { Button } from '@repo/ui/components/button';
+import { Input } from '@repo/ui/components/input';
+import { Badge } from '@repo/ui/components/badge';
+import {
+  Search,
+  Factory,
+  AlertTriangle,
+  Plus,
+  Filter,
+  ChevronRight,
+  CheckCircle,
+  Clock,
+} from 'lucide-react';
 
-const productionData = [
-  { name: 'Jan', target: 100, actual: 95 },
-  { name: 'Feb', target: 100, actual: 98 },
-  { name: 'Mar', target: 100, actual: 102 },
-  { name: 'Apr', target: 100, actual: 97 },
-  { name: 'May', target: 100, actual: 103 },
-  { name: 'Jun', target: 100, actual: 99 },
-];
-
-const workOrders = [
+// Mock data for manufacturing orders
+const orders = [
   {
-    id: 'WO001',
+    id: 'MFG001',
     product: 'Engine Assembly',
-    status: 'In Progress',
-    progress: 75,
-    startDate: '2024-03-01',
-    targetDate: '2024-03-15',
-    quality: 'Passed',
-    issues: [],
+    status: 'in-progress',
+    progress: 65,
+    startDate: '2024-03-15',
+    targetDate: '2024-03-25',
+    priority: 'high',
+    qualityChecks: 3,
+    totalChecks: 5,
+    alerts: ['Quality check pending'],
   },
   {
-    id: 'WO002',
-    product: 'Wing Assembly',
-    status: 'On Hold',
-    progress: 30,
-    startDate: '2024-03-05',
-    targetDate: '2024-03-20',
-    quality: 'Failed',
-    issues: ['Material Defect'],
-  },
-  {
-    id: 'WO003',
-    product: 'Landing Gear',
-    status: 'Completed',
+    id: 'MFG002',
+    product: 'Wing Section',
+    status: 'completed',
     progress: 100,
-    startDate: '2024-02-25',
-    targetDate: '2024-03-10',
-    quality: 'Passed',
-    issues: [],
+    startDate: '2024-03-10',
+    targetDate: '2024-03-20',
+    priority: 'medium',
+    qualityChecks: 5,
+    totalChecks: 5,
+    alerts: [],
+  },
+  {
+    id: 'MFG003',
+    product: 'Landing Gear',
+    status: 'scheduled',
+    progress: 0,
+    startDate: '2024-03-25',
+    targetDate: '2024-04-05',
+    priority: 'low',
+    qualityChecks: 0,
+    totalChecks: 4,
+    alerts: ['Parts delivery delayed'],
   },
 ];
 
 export default function ManufacturingPage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState(orders[0]);
+
+  const filteredOrders = orders.filter((o) =>
+    o.product.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Manufacturing Operations</h2>
-        <Button>
-          <Factory className="mr-2 h-4 w-4" />
-          New Work Order
-        </Button>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Production Rate</CardTitle>
-            <Factory className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">98%</div>
-            <p className="text-xs text-muted-foreground">of target</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Quality Rate</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">99.5%</div>
-            <p className="text-xs text-muted-foreground">pass rate</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Work Orders</CardTitle>
-            <Wrench className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">in progress</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">On-Time Delivery</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">95%</div>
-            <p className="text-xs text-muted-foreground">of orders</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Production Performance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={productionData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="target" fill="#8884d8" name="Target" />
-                <Bar dataKey="actual" fill="#82ca9d" name="Actual" />
-              </BarChart>
-            </ResponsiveContainer>
+        <h1 className="text-3xl font-bold">Manufacturing</h1>
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+            <Input
+              placeholder="Search orders..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
           </div>
-        </CardContent>
-      </Card>
+          <Button variant="outline">
+            <Filter className="h-4 w-4 mr-2" />
+            Filter
+          </Button>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            New Order
+          </Button>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Active Work Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Work Order</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead>Quality</TableHead>
-                <TableHead>Issues</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {workOrders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>{order.id}</TableCell>
-                  <TableCell>{order.product}</TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                      order.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                      order.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
-                      'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="w-full">
-                      <Progress value={order.progress} className="h-2" />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                      order.quality === 'Passed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {order.quality}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {order.issues.length > 0 && (
-                      <div className="flex items-center text-red-500">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {order.issues.join(', ')}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        {/* Orders List */}
+        <Card className="col-span-2">
+          <CardHeader>
+            <CardTitle>Production Orders</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[600px]">
+              <div className="space-y-2">
+                {filteredOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-colors ${
+                      selectedOrder.id === order.id
+                        ? 'bg-gray-100 border-gray-300'
+                        : 'hover:bg-gray-50'
+                    }`}
+                    onClick={() => setSelectedOrder(order)}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <Factory
+                        className={`h-6 w-6 ${
+                          order.status === 'completed'
+                            ? 'text-green-500'
+                            : order.status === 'in-progress'
+                            ? 'text-blue-500'
+                            : 'text-gray-500'
+                        }`}
+                      />
+                      <div>
+                        <h3 className="font-medium">{order.product}</h3>
+                        <p className="text-sm text-gray-500">{order.id}</p>
                       </div>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge
+                        variant={
+                          order.status === 'completed'
+                            ? 'default'
+                            : order.status === 'in-progress'
+                            ? 'secondary'
+                            : 'outline'
+                        }
+                      >
+                        {order.status}
+                      </Badge>
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+
+        {/* Order Details */}
+        <Card className="col-span-5">
+          <CardHeader>
+            <CardTitle>Order Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Progress Bar */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">Production Progress</p>
+                  <p className="text-sm text-gray-500">{selectedOrder.progress}%</p>
+                </div>
+                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 rounded-full transition-all"
+                    style={{ width: `${selectedOrder.progress}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Order Information */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Start Date</p>
+                    <p className="font-medium">{selectedOrder.startDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Target Date</p>
+                    <p className="font-medium">{selectedOrder.targetDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Priority</p>
+                    <Badge
+                      variant={
+                        selectedOrder.priority === 'high'
+                          ? 'destructive'
+                          : selectedOrder.priority === 'medium'
+                          ? 'secondary'
+                          : 'outline'
+                      }
+                    >
+                      {selectedOrder.priority}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Quality Checks</p>
+                    <p className="font-medium">
+                      {selectedOrder.qualityChecks} / {selectedOrder.totalChecks}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Status</p>
+                    <div className="flex items-center space-x-2">
+                      {selectedOrder.status === 'completed' ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : selectedOrder.status === 'in-progress' ? (
+                        <Clock className="h-4 w-4 text-blue-500" />
+                      ) : (
+                        <Factory className="h-4 w-4 text-gray-500" />
+                      )}
+                      <span className="capitalize">{selectedOrder.status}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Alerts */}
+              {selectedOrder.alerts.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="font-medium">Active Alerts</h3>
+                  <div className="space-y-2">
+                    {selectedOrder.alerts.map((alert, index) => (
+                      <div
+                        key={index}
+                        className="flex items-start space-x-2 p-3 rounded-lg bg-yellow-50 border border-yellow-200"
+                      >
+                        <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
+                        <p className="text-sm text-yellow-800">{alert}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex space-x-4">
+                <Button>Update Progress</Button>
+                <Button variant="outline">Quality Check</Button>
+                <Button variant="outline">View Documentation</Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 } 
