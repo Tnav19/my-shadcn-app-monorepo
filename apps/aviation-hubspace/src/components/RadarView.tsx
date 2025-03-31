@@ -3,18 +3,25 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
+interface Flight {
+  id: string;
+  position: {
+    lat: number;
+    lng: number;
+  };
+  heading: number;
+  altitude: number;
+  speed: number;
+  status: string;
+}
+
+interface ClosestFlight {
+  flight: Flight | null;
+  distance: number;
+}
+
 interface RadarViewProps {
-  flights: Array<{
-    id: string;
-    position: {
-      lat: number;
-      lng: number;
-    };
-    heading: number;
-    altitude: number;
-    speed: number;
-    status: string;
-  }>;
+  flights: Array<Flight>;
   selectedFlightId?: string;
   onFlightClick?: (id: string) => void;
   zoom: number;
@@ -117,7 +124,7 @@ export default function RadarView({ flights, selectedFlightId, onFlightClick, zo
     };
 
     // Draw aircraft
-    const drawAircraft = (flight: RadarViewProps['flights'][0]) => {
+    const drawAircraft = (flight: Flight) => {
       // Convert lat/lng to radar coordinates (simplified)
       const x = center.x + (flight.position.lng * radius * zoom) / 180;
       const y = center.y - (flight.position.lat * radius * zoom) / 90;
@@ -204,14 +211,17 @@ export default function RadarView({ flights, selectedFlightId, onFlightClick, zo
 
           if (distance <= radius) {
             // Find closest aircraft
-            const closestFlight = flights.reduce((closest, flight) => {
+            const closestFlight = flights.reduce<ClosestFlight>((closest, flight) => {
               const flightX = center.x + (flight.position.lng * radius * zoom) / 180;
               const flightY = center.y - (flight.position.lat * radius * zoom) / 90;
               const flightDistance = Math.sqrt(
-                Math.pow(e.clientX - rect.left - flightX, 2) +
-                Math.pow(e.clientY - rect.top - flightY, 2)
+                Math.pow(flightX - x, 2) + Math.pow(flightY - y, 2)
               );
-              return flightDistance < closest.distance ? { flight, distance: flightDistance } : closest;
+
+              if (flightDistance < closest.distance) {
+                return { flight, distance: flightDistance };
+              }
+              return closest;
             }, { flight: null, distance: Infinity });
 
             if (closestFlight.distance < 20 && closestFlight.flight) {

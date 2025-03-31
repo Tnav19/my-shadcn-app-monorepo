@@ -6,220 +6,278 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/ca
 import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
 import {
-  AlertCircle,
   Calendar,
+  Clock,
   Filter,
   Plane,
   Plus,
   Search,
   Settings,
-  Users
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { aviationApi, TimetableFlight, FutureFlight } from '@/services/aviationApi';
 
-interface Flight {
-  id: string;
-  flightNumber: string;
-  aircraftId: string;
-  origin: string;
-  destination: string;
-  departureTime: string;
-  arrivalTime: string;
-  status: 'scheduled' | 'boarding' | 'in-flight' | 'landed' | 'delayed' | 'cancelled';
-  crew: string[];
-  passengers: number;
-  gate: string;
-  terminal: string;
-}
-
-const FLIGHTS: Flight[] = [
-  {
-    id: '1',
-    flightNumber: 'AH123',
-    aircraftId: 'N12345',
-    origin: 'JFK',
-    destination: 'LAX',
-    departureTime: '2024-03-15T10:00:00',
-    arrivalTime: '2024-03-15T13:00:00',
-    status: 'scheduled',
-    crew: ['John Smith', 'Sarah Johnson'],
-    passengers: 180,
-    gate: 'A12',
-    terminal: 'Terminal 1'
-  },
-  {
-    id: '2',
-    flightNumber: 'AH456',
-    aircraftId: 'N67890',
-    origin: 'LAX',
-    destination: 'ORD',
-    departureTime: '2024-03-15T11:30:00',
-    arrivalTime: '2024-03-15T15:30:00',
-    status: 'boarding',
-    crew: ['Michael Brown', 'Emily Davis'],
-    passengers: 165,
-    gate: 'B8',
-    terminal: 'Terminal 2'
-  },
-  {
-    id: '3',
-    flightNumber: 'AH789',
-    aircraftId: 'N24680',
-    origin: 'ORD',
-    destination: 'MIA',
-    departureTime: '2024-03-15T14:00:00',
-    arrivalTime: '2024-03-15T17:00:00',
-    status: 'delayed',
-    crew: ['David Wilson', 'Lisa Anderson'],
-    passengers: 190,
-    gate: 'C15',
-    terminal: 'Terminal 3'
-  }
-];
-
-const STATUS_COLORS = {
+const STATUS_COLORS: Record<string, string> = {
   scheduled: 'bg-blue-500',
-  boarding: 'bg-yellow-500',
-  'in-flight': 'bg-green-500',
-  landed: 'bg-gray-500',
-  delayed: 'bg-orange-500',
-  cancelled: 'bg-red-500'
+  delayed: 'bg-yellow-500',
+  cancelled: 'bg-red-500',
+  completed: 'bg-green-500',
+  active: 'bg-green-500',
+  landed: 'bg-purple-500',
+  incident: 'bg-red-500',
+  diverted: 'bg-orange-500'
 };
 
-export default function FlightSchedulePage() {
+export default function SchedulePage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'current' | 'future'>('current');
+  const [timetableFlights, setTimetableFlights] = useState<TimetableFlight[]>([]);
+  const [futureFlights, setFutureFlights] = useState<FutureFlight[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedFlight, setSelectedFlight] = useState<TimetableFlight | FutureFlight | null>(null);
+  const [selectedAirport, setSelectedAirport] = useState('DXB'); // Default to Dubai International
 
-  const filteredFlights = FLIGHTS.filter(flight => {
-    const matchesSearch = flight.flightNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         flight.origin.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         flight.destination.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = !selectedStatus || flight.status === selectedStatus;
-    const matchesDate = !selectedDate || flight.departureTime.startsWith(selectedDate);
-    return matchesSearch && matchesStatus && matchesDate;
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [timetableResponse, futureResponse] = await Promise.all([
+          aviationApi.getTimetable({
+            iataCode: selectedAirport,
+            type: 'departure',
+            date: new Date().toISOString().split('T')[0],
+          }),
+          aviationApi.getFutureFlights({
+            iataCode: selectedAirport,
+            type: 'arrival',
+            date: new Date(Date.now() + 9 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+          }),
+        ]);
+        setTimetableFlights(timetableResponse.data);
+        setFutureFlights(futureResponse.data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch schedule data');
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const scheduledFlights = FLIGHTS.filter(flight => flight.status === 'scheduled');
-  const inProgressFlights = FLIGHTS.filter(flight => flight.status === 'in-flight');
-  const delayedFlights = FLIGHTS.filter(flight => flight.status === 'delayed');
-  const totalPassengers = FLIGHTS.reduce((sum, flight) => sum + flight.passengers, 0);
+    fetchData();
+    // Refresh data every 5 minutes
+    const interval = setInterval(fetchData, 300000);
+    return () => clearInterval(interval);
+  }, [selectedAirport]);
+
+  const filteredFlights = (viewMode === 'current' ? timetableFlights : futureFlights).filter(flight =>
+    flight.flight.iataNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    flight.airline.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (viewMode === 'current' 
+      ? flight.departure.iataCode.toLowerCase().includes(searchQuery.toLowerCase())
+      : flight.departure.iataCode.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
+  };
+
+  const isFutureFlight = (flight: TimetableFlight | FutureFlight): flight is FutureFlight => {
+    return 'weekday' in flight;
+  };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Flight Schedule</h1>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          New Flight
-        </Button>
+        <div className="flex items-center space-x-4">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Schedule
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Scheduled Flights</CardTitle>
-            <Calendar className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{scheduledFlights.length}</div>
-            <p className="text-xs text-muted-foreground">Today's schedule</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Flight</CardTitle>
-            <Plane className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inProgressFlights.length}</div>
-            <p className="text-xs text-muted-foreground">Currently airborne</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Delayed Flights</CardTitle>
-            <AlertCircle className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{delayedFlights.length}</div>
-            <p className="text-xs text-muted-foreground">Requires attention</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Passengers</CardTitle>
-            <Users className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalPassengers}</div>
-            <p className="text-xs text-muted-foreground">Today's total</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Flight Schedule</CardTitle>
-            <div className="flex items-center space-x-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Flight Schedules</CardTitle>
+                <div className="flex space-x-2">
+                  <Button
+                    variant={viewMode === 'current' ? 'default' : 'outline'}
+                    onClick={() => setViewMode('current')}
+                  >
+                    Current
+                  </Button>
+                  <Button
+                    variant={viewMode === 'future' ? 'default' : 'outline'}
+                    onClick={() => setViewMode('future')}
+                  >
+                    Future
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search flights..."
-                  className="pl-8"
+                  className="pl-8 mb-4"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
+                <ScrollArea className="h-[600px]">
+                  <div className="space-y-4">
+                    {loading ? (
+                      <div className="flex items-center justify-center h-32">
+                        <div className="animate-pulse text-gray-500">Loading schedule data...</div>
+                      </div>
+                    ) : error ? (
+                      <div className="flex items-center justify-center h-32 text-red-500">
+                        {error}
+                      </div>
+                    ) : (
+                      filteredFlights.map((flight) => (
+                        <div
+                          key={isFutureFlight(flight) ? flight.flight.iataNumber : flight.flight.iataNumber}
+                          className={`p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors ${
+                            selectedFlight?.flight.iataNumber === flight.flight.iataNumber ? 'bg-accent border-primary' : ''
+                          }`}
+                          onClick={() => setSelectedFlight(flight)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium">{flight.flight.iataNumber}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {flight.airline.name}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="outline">
+                                {isFutureFlight(flight) ? flight.aircraft.modelText : flight.flight.iataNumber}
+                              </Badge>
+                              {!isFutureFlight(flight) && (
+                                <div className={`w-2 h-2 rounded-full ${STATUS_COLORS[flight.status]}`} />
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                            <div className="flex items-center space-x-2">
+                              <Plane className="h-4 w-4" />
+                              <span>{flight.departure.iataCode} → {flight.arrival.iataCode}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Clock className="h-4 w-4" />
+                              <span>
+                                {isFutureFlight(flight)
+                                  ? flight.departure.scheduledTime
+                                  : formatDate(flight.departure.scheduledTime)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
-              <Button variant="outline">
-                <Filter className="mr-2 h-4 w-4" />
-                Filter
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[400px]">
-            <div className="space-y-4">
-              {filteredFlights.map((flight) => (
-                <div
-                  key={flight.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-3 h-3 rounded-full ${STATUS_COLORS[flight.status]}`} />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          {selectedFlight && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Flight Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-medium mb-2">Flight Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Flight Number</span>
+                        <span>{selectedFlight.flight.iataNumber}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Airline</span>
+                        <span>{selectedFlight.airline.name}</span>
+                      </div>
+                      {isFutureFlight(selectedFlight) && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Aircraft</span>
+                          <span>{selectedFlight.aircraft.modelText}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-medium mb-2">Schedule</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>From</span>
+                        <span>{selectedFlight.departure.iataCode}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>To</span>
+                        <span>{selectedFlight.arrival.iataCode}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Departure</span>
+                        <span>
+                          {isFutureFlight(selectedFlight)
+                            ? selectedFlight.departure.scheduledTime
+                            : formatDate(selectedFlight.departure.scheduledTime)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Arrival</span>
+                        <span>
+                          {isFutureFlight(selectedFlight)
+                            ? selectedFlight.arrival.scheduledTime
+                            : formatDate(selectedFlight.arrival.scheduledTime)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {!isFutureFlight(selectedFlight) && (
                     <div>
-                      <div className="font-medium">{flight.flightNumber}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {flight.origin} → {flight.destination}
+                      <h3 className="font-medium mb-2">Status</h3>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Status</span>
+                          <span className="capitalize">{selectedFlight.status}</span>
+                        </div>
+                        {selectedFlight.departure.delay && (
+                          <div className="flex items-center justify-between text-sm text-yellow-500">
+                            <span>Delay</span>
+                            <span>{selectedFlight.departure.delay} minutes</span>
+                          </div>
+                        )}
+                        {selectedFlight.codeshared && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span>Codeshared</span>
+                            <span>
+                              {selectedFlight.codeshared.airline.name} {selectedFlight.codeshared.flight.number}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <div className="text-sm font-medium">
-                        {new Date(flight.departureTime).toLocaleTimeString()}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Gate {flight.gate}
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className={STATUS_COLORS[flight.status]}>
-                        {flight.status}
-                      </Badge>
-                      <Button variant="ghost" size="icon">
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 } 

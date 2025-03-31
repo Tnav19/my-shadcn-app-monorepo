@@ -18,8 +18,9 @@ import {
   ZoomIn,
   ZoomOut
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { aviationApi, Flight } from '@/services/aviationApi';
 
 // Dynamically import the RadarView component with no SSR
 const RadarView = dynamic(() => import('@/components/RadarView'), {
@@ -31,135 +32,13 @@ const RadarView = dynamic(() => import('@/components/RadarView'), {
   ),
 });
 
-interface Flight {
-  id: string;
-  flightNumber: string;
-  aircraft: string;
-  altitude: number;
-  speed: number;
-  heading: number;
-  position: {
-    lat: number;
-    lng: number;
-  };
-  status: 'on-time' | 'delayed' | 'diverted' | 'cancelled';
-  origin: string;
-  destination: string;
-  eta: string;
-  weather: {
-    condition: 'clear' | 'partly-cloudy' | 'cloudy' | 'rain' | 'storm' | 'snow';
-    visibility: number;
-    windSpeed: number;
-    windDirection: string;
-  };
-}
-
-interface WeatherLayer {
-  id: string;
-  type: 'precipitation' | 'clouds' | 'wind' | 'temperature';
-  intensity: number;
-  coverage: number;
-  timestamp: string;
-}
-
-const FLIGHTS: Flight[] = [
-  {
-    id: '1',
-    flightNumber: 'AA123',
-    aircraft: 'Boeing 737-800',
-    altitude: 35000,
-    speed: 450,
-    heading: 270,
-    position: {
-      lat: 40.7128,
-      lng: -74.0060
-    },
-    status: 'on-time',
-    origin: 'JFK',
-    destination: 'LAX',
-    eta: '2024-03-15T15:30:00Z',
-    weather: {
-      condition: 'clear',
-      visibility: 10,
-      windSpeed: 12,
-      windDirection: 'NE'
-    }
-  },
-  {
-    id: '2',
-    flightNumber: 'UA456',
-    aircraft: 'Airbus A320',
-    altitude: 28000,
-    speed: 420,
-    heading: 180,
-    position: {
-      lat: 34.0522,
-      lng: -118.2437
-    },
-    status: 'delayed',
-    origin: 'LAX',
-    destination: 'ORD',
-    eta: '2024-03-15T16:45:00Z',
-    weather: {
-      condition: 'partly-cloudy',
-      visibility: 8,
-      windSpeed: 15,
-      windDirection: 'SW'
-    }
-  },
-  {
-    id: '3',
-    flightNumber: 'DL789',
-    aircraft: 'Boeing 757-200',
-    altitude: 32000,
-    speed: 430,
-    heading: 90,
-    position: {
-      lat: 41.8781,
-      lng: -87.6298
-    },
-    status: 'diverted',
-    origin: 'ORD',
-    destination: 'MIA',
-    eta: '2024-03-15T17:15:00Z',
-    weather: {
-      condition: 'storm',
-      visibility: 3,
-      windSpeed: 25,
-      windDirection: 'NW'
-    }
-  }
-];
-
-const WEATHER_LAYERS: WeatherLayer[] = [
-  {
-    id: '1',
-    type: 'precipitation',
-    intensity: 0.7,
-    coverage: 0.6,
-    timestamp: '2024-03-15T10:00:00Z'
-  },
-  {
-    id: '2',
-    type: 'clouds',
-    intensity: 0.8,
-    coverage: 0.7,
-    timestamp: '2024-03-15T10:00:00Z'
-  },
-  {
-    id: '3',
-    type: 'wind',
-    intensity: 0.5,
-    coverage: 1,
-    timestamp: '2024-03-15T10:00:00Z'
-  }
-];
-
 const STATUS_COLORS = {
-  'on-time': 'bg-green-500',
-  'delayed': 'bg-yellow-500',
-  'diverted': 'bg-orange-500',
-  'cancelled': 'bg-red-500'
+  'active': 'bg-green-500',
+  'scheduled': 'bg-blue-500',
+  'landed': 'bg-gray-500',
+  'cancelled': 'bg-red-500',
+  'incident': 'bg-yellow-500',
+  'diverted': 'bg-orange-500'
 };
 
 export default function RadarPage() {
@@ -167,19 +46,55 @@ export default function RadarPage() {
   const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
   const [selectedLayers, setSelectedLayers] = useState<string[]>(['precipitation', 'clouds']);
   const [zoom, setZoom] = useState(1);
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  const filteredFlights = FLIGHTS.filter(flight =>
-    flight.flightNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    flight.origin.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    flight.destination.toLowerCase().includes(searchQuery.toLowerCase())
+  const fetchFlights = async () => {
+    try {
+      setLoading(true);
+      setStatusMessage('Fetching flight data...');
+      const data = await aviationApi.getActiveFlights();
+      setFlights(data);
+      setError(null);
+      setStatusMessage('Flight data updated successfully');
+      // Clear status message after 3 seconds
+      setTimeout(() => setStatusMessage(null), 3000);
+    } catch (err) {
+      setError('Failed to fetch flight data');
+      setStatusMessage('Failed to fetch flight data');
+      console.error('Error fetching flights:', err);
+      // Clear status message after 3 seconds
+      setTimeout(() => setStatusMessage(null), 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFlights();
+    // Refresh data every 30 seconds
+    const interval = setInterval(fetchFlights, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredFlights = flights.filter(flight =>
+    flight.flight_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    flight.departure.airport.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    flight.arrival.airport.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleRefresh = () => {
+    fetchFlights();
+  };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Radar</h1>
         <div className="flex items-center space-x-4">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleRefresh}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
@@ -190,6 +105,14 @@ export default function RadarPage() {
         </div>
       </div>
 
+      {statusMessage && (
+        <div className={`p-4 rounded-lg ${
+          statusMessage.includes('Failed') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+        }`}>
+          {statusMessage}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <Card>
@@ -198,12 +121,32 @@ export default function RadarPage() {
             </CardHeader>
             <CardContent>
               <div className="relative h-[600px] border rounded-lg overflow-hidden bg-gray-900">
-                <RadarView 
-                  flights={filteredFlights}
-                  selectedFlightId={selectedFlight || undefined}
-                  onFlightClick={setSelectedFlight}
-                  zoom={zoom}
-                />
+                {loading ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="animate-pulse text-gray-500">Loading radar view...</div>
+                  </div>
+                ) : error ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-red-500">{error}</div>
+                  </div>
+                ) : (
+                  <RadarView 
+                    flights={filteredFlights.map(flight => ({
+                      id: flight.id,
+                      position: {
+                        lat: flight.live?.latitude || 0,
+                        lng: flight.live?.longitude || 0,
+                      },
+                      heading: flight.live?.direction || 0,
+                      altitude: flight.live?.altitude || 0,
+                      speed: flight.live?.speed_horizontal || 0,
+                      status: flight.status,
+                    }))}
+                    selectedFlightId={selectedFlight || undefined}
+                    onFlightClick={setSelectedFlight}
+                    zoom={zoom}
+                  />
+                )}
                 <div className="absolute bottom-4 right-4 flex space-x-2">
                   <Button variant="outline" size="icon" onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}>
                     <ZoomOut className="h-4 w-4" />
@@ -227,23 +170,20 @@ export default function RadarPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {WEATHER_LAYERS.map((layer) => (
-                  <div key={layer.id} className="flex items-center justify-between">
+                {['precipitation', 'clouds', 'wind', 'temperature'].map((layer) => (
+                  <div key={layer} className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Switch
-                        checked={selectedLayers.includes(layer.type)}
+                        checked={selectedLayers.includes(layer)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setSelectedLayers([...selectedLayers, layer.type]);
+                            setSelectedLayers([...selectedLayers, layer]);
                           } else {
-                            setSelectedLayers(selectedLayers.filter(l => l !== layer.type));
+                            setSelectedLayers(selectedLayers.filter(l => l !== layer));
                           }
                         }}
                       />
-                      <Label className="capitalize">{layer.type}</Label>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {Math.round(layer.coverage * 100)}% coverage
+                      <Label className="capitalize">{layer}</Label>
                     </div>
                   </div>
                 ))}
@@ -276,29 +216,29 @@ export default function RadarPage() {
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-medium">{flight.flightNumber}</div>
+                            <div className="font-medium">{flight.flight_number}</div>
                             <div className="text-sm text-muted-foreground">
-                              {flight.origin} → {flight.destination}
+                              {flight.departure.airport} → {flight.arrival.airport}
                             </div>
                           </div>
-                          <div className={`w-2 h-2 rounded-full ${STATUS_COLORS[flight.status]}`} />
+                          <div className={`w-2 h-2 rounded-full ${STATUS_COLORS[flight.status as keyof typeof STATUS_COLORS]}`} />
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                           <div className="flex items-center space-x-2">
                             <Plane className="h-4 w-4" />
-                            <span>{flight.altitude}ft</span>
+                            <span>{flight.live?.altitude ? `${flight.live.altitude}ft` : 'N/A'}</span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Wind className="h-4 w-4" />
-                            <span>{flight.speed}kts</span>
+                            <span>{flight.live?.speed_horizontal ? `${flight.live.speed_horizontal}kts` : 'N/A'}</span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Clock className="h-4 w-4" />
-                            <span>ETA: {new Date(flight.eta).toLocaleTimeString()}</span>
+                            <span>ETA: {new Date(flight.arrival.scheduled).toLocaleTimeString()}</span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Eye className="h-4 w-4" />
-                            <span>{flight.weather.visibility}mi</span>
+                            <span>{flight.live?.is_ground ? 'On Ground' : 'In Air'}</span>
                           </div>
                         </div>
                       </div>

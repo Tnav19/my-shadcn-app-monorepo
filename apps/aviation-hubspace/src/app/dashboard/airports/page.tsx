@@ -17,219 +17,230 @@ import {
   Search,
   Users,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { aviationApi, Airport, Flight } from '@/services/aviationApi';
 
-// Mock data for airports
-const airports = [
-  {
-    id: 'JFK',
-    name: 'John F. Kennedy International Airport',
-    location: 'New York, USA',
-    status: 'active',
-    gates: 12,
-    activeGates: 8,
-    flights: 45,
-    passengers: 25000,
-    alerts: ['Gate A3 maintenance required'],
-  },
-  {
-    id: 'LHR',
-    name: 'London Heathrow Airport',
-    location: 'London, UK',
-    status: 'active',
-    gates: 15,
-    activeGates: 12,
-    flights: 52,
-    passengers: 28000,
-    alerts: [],
-  },
-  {
-    id: 'DXB',
-    name: 'Dubai International Airport',
-    location: 'Dubai, UAE',
-    status: 'maintenance',
-    gates: 10,
-    activeGates: 7,
-    flights: 38,
-    passengers: 22000,
-    alerts: ['Terminal 2 renovation in progress'],
-  },
-];
+const STATUS_COLORS = {
+  active: 'bg-green-500',
+  maintenance: 'bg-yellow-500',
+  closed: 'bg-red-500',
+  weather: 'bg-blue-500',
+};
 
 export default function AirportsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAirport, setSelectedAirport] = useState(airports[0]);
+  const [airports, setAirports] = useState<Airport[]>([]);
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null);
 
-  const filteredAirports = airports.filter((a) =>
-    a.name.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [airportsResponse, flightsResponse] = await Promise.all([
+          aviationApi.getAirports(),
+          aviationApi.getActiveFlights(),
+        ]);
+        setAirports(airportsResponse.data);
+        setFlights(flightsResponse);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch airport data');
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+    // Refresh data every 5 minutes
+    const interval = setInterval(fetchData, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredAirports = airports.filter(airport =>
+    airport.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    airport.iata.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    airport.city.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const getAirportFlights = (iata: string) => {
+    return flights.filter(
+      flight => flight.departure.iata === iata || flight.arrival.iata === iata
+    );
+  };
+
+  const getAirportStatus = (airport: Airport) => {
+    const airportFlights = getAirportFlights(airport.iata);
+    const hasActiveFlights = airportFlights.some(flight => flight.status === 'active');
+    const hasDelayedFlights = airportFlights.some(flight => flight.status === 'delayed');
+    
+    if (!hasActiveFlights) return 'closed';
+    if (hasDelayedFlights) return 'weather';
+    return 'active';
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Airports</h1>
         <div className="flex items-center space-x-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-            <Input
-              placeholder="Search airports..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Button variant="outline">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
           <Button>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Add Airport
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        {/* Airports List */}
-        <Card className="col-span-2">
-          <CardHeader>
-            <CardTitle>Airports</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[600px]">
-              <div className="space-y-2">
-                {filteredAirports.map((airport) => (
-                  <div
-                    key={airport.id}
-                    className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-colors ${
-                      selectedAirport.id === airport.id
-                        ? 'bg-gray-100 border-gray-300'
-                        : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => setSelectedAirport(airport)}
-                  >
-                    <div className="flex items-center space-x-4">
-                      <Building2
-                        className={`h-6 w-6 ${
-                          airport.status === 'active'
-                            ? 'text-green-500'
-                            : 'text-yellow-500'
-                        }`}
-                      />
-                      <div>
-                        <h3 className="font-medium">{airport.name}</h3>
-                        <p className="text-sm text-gray-500">{airport.id}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Airport List</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search airports..."
+                  className="pl-8 mb-4"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <ScrollArea className="h-[600px]">
+                  <div className="space-y-4">
+                    {loading ? (
+                      <div className="flex items-center justify-center h-32">
+                        <div className="animate-pulse text-gray-500">Loading airports...</div>
+                      </div>
+                    ) : error ? (
+                      <div className="flex items-center justify-center h-32 text-red-500">
+                        {error}
+                      </div>
+                    ) : (
+                      filteredAirports.map((airport) => {
+                        const status = getAirportStatus(airport);
+                        const airportFlights = getAirportFlights(airport.iata);
+                        const activeFlights = airportFlights.filter(f => f.status === 'active');
+                        const delayedFlights = airportFlights.filter(f => f.status === 'delayed');
+
+                        return (
+                          <div
+                            key={airport.id}
+                            className={`p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors ${
+                              selectedAirport?.id === airport.id ? 'bg-accent border-primary' : ''
+                            }`}
+                            onClick={() => setSelectedAirport(airport)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium">{airport.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {airport.city}, {airport.country} ({airport.iata})
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Badge variant="outline">{airport.iata}</Badge>
+                                <div className={`w-2 h-2 rounded-full ${STATUS_COLORS[status]}`} />
+                              </div>
+                            </div>
+                            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                              <div className="flex items-center space-x-2">
+                                <Plane className="h-4 w-4" />
+                                <span>{activeFlights.length} Active Flights</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Clock className="h-4 w-4" />
+                                <span>{delayedFlights.length} Delayed</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Building2 className="h-4 w-4" />
+                                <span>{airport.timezone}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Users className="h-4 w-4" />
+                                <span>{airportFlights.length} Total Flights</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          {selectedAirport && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Airport Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-medium mb-2">Location Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>City</span>
+                        <span>{selectedAirport.city}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Country</span>
+                        <span>{selectedAirport.country}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Timezone</span>
+                        <span>{selectedAirport.timezone}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>UTC Offset</span>
+                        <span>{selectedAirport.utc_offset}</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge
-                        variant={
-                          airport.status === 'active'
-                            ? 'default'
-                            : 'secondary'
-                        }
-                      >
-                        {airport.status}
-                      </Badge>
-                      <ChevronRight className="h-4 w-4 text-gray-400" />
-                    </div>
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
 
-        {/* Airport Details */}
-        <Card className="col-span-5">
-          <CardHeader>
-            <CardTitle>Airport Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Airport Information */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-4">
                   <div>
-                    <p className="text-sm text-gray-500">Location</p>
-                    <p className="font-medium">{selectedAirport.location}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Total Gates</p>
-                    <p className="font-medium">{selectedAirport.gates}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Active Gates</p>
-                    <p className="font-medium">{selectedAirport.activeGates}</p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Active Flights</p>
-                    <div className="flex items-center space-x-2">
-                      <Plane className="h-4 w-4 text-blue-500" />
-                      <p className="font-medium">{selectedAirport.flights}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Daily Passengers</p>
-                    <div className="flex items-center space-x-2">
-                      <Users className="h-4 w-4 text-green-500" />
-                      <p className="font-medium">{selectedAirport.passengers}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Status</p>
-                    <Badge
-                      variant={
-                        selectedAirport.status === 'active'
-                          ? 'default'
-                          : 'secondary'
-                      }
-                    >
-                      {selectedAirport.status}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status Information */}
-              <div className="flex items-center space-x-2">
-                {selectedAirport.status === 'active' ? (
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                ) : (
-                  <Clock className="h-5 w-5 text-yellow-500" />
-                )}
-                <span className="capitalize font-medium">{selectedAirport.status}</span>
-              </div>
-
-              {/* Alerts */}
-              {selectedAirport.alerts.length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="font-medium">Active Alerts</h3>
-                  <div className="space-y-2">
-                    {selectedAirport.alerts.map((alert, index) => (
-                      <div
-                        key={index}
-                        className="flex items-start space-x-2 p-3 rounded-lg bg-yellow-50 border border-yellow-200"
-                      >
-                        <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
-                        <p className="text-sm text-yellow-800">{alert}</p>
+                    <h3 className="font-medium mb-2">Flight Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Active Flights</span>
+                        <span>{getAirportFlights(selectedAirport.iata).filter(f => f.status === 'active').length}</span>
                       </div>
-                    ))}
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Delayed Flights</span>
+                        <span>{getAirportFlights(selectedAirport.iata).filter(f => f.status === 'delayed').length}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Total Flights</span>
+                        <span>{getAirportFlights(selectedAirport.iata).length}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-medium mb-2">Coordinates</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Latitude</span>
+                        <span>{selectedAirport.latitude}°</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Longitude</span>
+                        <span>{selectedAirport.longitude}°</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex space-x-4">
-                <Button>View Gates</Button>
-                <Button variant="outline">Ground Operations</Button>
-                <Button variant="outline">View Analytics</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -6,234 +6,249 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/ca
 import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
 import {
-  Cloud,
-  Compass,
+  Clock,
   Filter,
-  Map,
+  Globe,
+  MapPin,
   Plane,
   Plus,
   Search,
-  Settings
+  Settings,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { aviationApi, Route, Airport, City } from '@/services/aviationApi';
 
-interface Route {
-  id: string;
-  name: string;
-  origin: string;
-  destination: string;
-  distance: number;
-  duration: string;
-  aircraftType: string;
-  status: 'active' | 'planned' | 'maintenance' | 'weather-delayed';
-  weather: {
-    conditions: string;
-    windSpeed: number;
-    visibility: number;
-  };
-  fuelEfficiency: number;
-  waypoints: string[];
-  restrictions: string[];
-}
-
-const ROUTES: Route[] = [
-  {
-    id: '1',
-    name: 'JFK-LAX Transcontinental',
-    origin: 'JFK',
-    destination: 'LAX',
-    distance: 2789,
-    duration: '5h 30m',
-    aircraftType: 'Boeing 737-800',
-    status: 'active',
-    weather: {
-      conditions: 'Clear',
-      windSpeed: 15,
-      visibility: 10
-    },
-    fuelEfficiency: 0.85,
-    waypoints: ['JFK', 'CHI', 'DEN', 'LAX'],
-    restrictions: ['Altitude 35000ft']
-  },
-  {
-    id: '2',
-    name: 'LAX-ORD Midwest',
-    origin: 'LAX',
-    destination: 'ORD',
-    distance: 1744,
-    duration: '3h 45m',
-    aircraftType: 'Airbus A320',
-    status: 'weather-delayed',
-    weather: {
-      conditions: 'Storm',
-      windSpeed: 35,
-      visibility: 3
-    },
-    fuelEfficiency: 0.82,
-    waypoints: ['LAX', 'DEN', 'ORD'],
-    restrictions: ['Altitude 33000ft']
-  },
-  {
-    id: '3',
-    name: 'ORD-MIA Southeast',
-    origin: 'ORD',
-    destination: 'MIA',
-    distance: 1198,
-    duration: '2h 45m',
-    aircraftType: 'Boeing 737-700',
-    status: 'planned',
-    weather: {
-      conditions: 'Partly Cloudy',
-      windSpeed: 20,
-      visibility: 8
-    },
-    fuelEfficiency: 0.88,
-    waypoints: ['ORD', 'ATL', 'MIA'],
-    restrictions: ['Altitude 31000ft']
-  }
-];
-
-const STATUS_COLORS = {
-  active: 'bg-green-500',
-  planned: 'bg-blue-500',
-  maintenance: 'bg-yellow-500',
-  'weather-delayed': 'bg-orange-500'
-};
-
-export default function RoutePlanningPage() {
+export default function RoutesPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedAircraft, setSelectedAircraft] = useState<string | null>(null);
+  const [routes, setRoutes] = useState<Route[]>([]);
+  const [airports, setAirports] = useState<Airport[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
 
-  const filteredRoutes = ROUTES.filter(route => {
-    const matchesSearch = route.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         route.origin.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         route.destination.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = !selectedStatus || route.status === selectedStatus;
-    const matchesAircraft = !selectedAircraft || route.aircraftType === selectedAircraft;
-    return matchesSearch && matchesStatus && matchesAircraft;
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [routesResponse, airportsResponse, citiesResponse] = await Promise.all([
+          aviationApi.getRoutes(),
+          aviationApi.getAirports(),
+          aviationApi.getCities(),
+        ]);
+        setRoutes(routesResponse.data);
+        setAirports(airportsResponse.data);
+        setCities(citiesResponse.data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch route data');
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const activeRoutes = ROUTES.filter(route => route.status === 'active');
-  const weatherDelayedRoutes = ROUTES.filter(route => route.status === 'weather-delayed');
-  const plannedRoutes = ROUTES.filter(route => route.status === 'planned');
-  const totalDistance = ROUTES.reduce((sum, route) => sum + route.distance, 0);
+    fetchData();
+    // Refresh data every 5 minutes
+    const interval = setInterval(fetchData, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredRoutes = routes.filter(route =>
+    route.departure.airport.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    route.arrival.airport.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    route.airline.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const getCityInfo = (cityName: string) => {
+    return cities.find(city => city.name === cityName);
+  };
+
+  const getAirportInfo = (iata: string) => {
+    return airports.find(airport => airport.iata === iata);
+  };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Route Planning</h1>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          New Route
-        </Button>
+        <h1 className="text-3xl font-bold">Route Management</h1>
+        <div className="flex items-center space-x-4">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Route
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Routes</CardTitle>
-            <Plane className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeRoutes.length}</div>
-            <p className="text-xs text-muted-foreground">Currently in use</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Weather Delayed</CardTitle>
-            <Cloud className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{weatherDelayedRoutes.length}</div>
-            <p className="text-xs text-muted-foreground">Requires rerouting</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Planned Routes</CardTitle>
-            <Map className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{plannedRoutes.length}</div>
-            <p className="text-xs text-muted-foreground">Future schedules</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Distance</CardTitle>
-            <Compass className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalDistance}nm</div>
-            <p className="text-xs text-muted-foreground">All routes combined</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Route Details</CardTitle>
-            <div className="flex items-center space-x-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Route List</CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search routes..."
-                  className="pl-8"
+                  className="pl-8 mb-4"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
+                <ScrollArea className="h-[600px]">
+                  <div className="space-y-4">
+                    {loading ? (
+                      <div className="flex items-center justify-center h-32">
+                        <div className="animate-pulse text-gray-500">Loading routes...</div>
+                      </div>
+                    ) : error ? (
+                      <div className="flex items-center justify-center h-32 text-red-500">
+                        {error}
+                      </div>
+                    ) : (
+                      filteredRoutes.map((route) => {
+                        const departureCity = getCityInfo(route.departure.city);
+                        const arrivalCity = getCityInfo(route.arrival.city);
+                        const departureAirport = getAirportInfo(route.departure.iata);
+                        const arrivalAirport = getAirportInfo(route.arrival.iata);
+
+                        return (
+                          <div
+                            key={route.id}
+                            className={`p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors ${
+                              selectedRoute?.id === route.id ? 'bg-accent border-primary' : ''
+                            }`}
+                            onClick={() => setSelectedRoute(route)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium">
+                                  {route.departure.airport} → {route.arrival.airport}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {route.airline.name} ({route.airline.iata})
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Badge variant="outline">{route.aircraft_type}</Badge>
+                              </div>
+                            </div>
+                            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                              <div className="flex items-center space-x-2">
+                                <MapPin className="h-4 w-4" />
+                                <span>
+                                  {route.departure.city}, {route.departure.country} → {route.arrival.city}, {route.arrival.country}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Globe className="h-4 w-4" />
+                                <span>{route.distance} km</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Clock className="h-4 w-4" />
+                                <span>{route.duration}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Settings className="h-4 w-4" />
+                                <span>{route.aircraft_type}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
-              <Button variant="outline">
-                <Filter className="mr-2 h-4 w-4" />
-                Filter
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[400px]">
-            <div className="space-y-4">
-              {filteredRoutes.map((route) => (
-                <div
-                  key={route.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-3 h-3 rounded-full ${STATUS_COLORS[route.status]}`} />
-                    <div>
-                      <div className="font-medium">{route.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {route.origin} → {route.destination}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          {selectedRoute && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Route Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-medium mb-2">Airline Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Name</span>
+                        <span>{selectedRoute.airline.name}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>IATA Code</span>
+                        <span>{selectedRoute.airline.iata}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>ICAO Code</span>
+                        <span>{selectedRoute.airline.icao}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <div className="text-sm font-medium">
-                        {route.distance}nm • {route.duration}
+
+                  <div>
+                    <h3 className="font-medium mb-2">Route Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Distance</span>
+                        <span>{selectedRoute.distance} km</span>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {route.aircraftType}
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Duration</span>
+                        <span>{selectedRoute.duration}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Aircraft Type</span>
+                        <span>{selectedRoute.aircraft_type}</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className={STATUS_COLORS[route.status]}>
-                        {route.status}
-                      </Badge>
-                      <Button variant="ghost" size="icon">
-                        <Settings className="h-4 w-4" />
-                      </Button>
+                  </div>
+
+                  <div>
+                    <h3 className="font-medium mb-2">Departure</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Airport</span>
+                        <span>{selectedRoute.departure.airport}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>City</span>
+                        <span>{selectedRoute.departure.city}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Country</span>
+                        <span>{selectedRoute.departure.country}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-medium mb-2">Arrival</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Airport</span>
+                        <span>{selectedRoute.arrival.airport}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>City</span>
+                        <span>{selectedRoute.arrival.city}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Country</span>
+                        <span>{selectedRoute.arrival.country}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 } 

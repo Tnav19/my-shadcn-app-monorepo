@@ -8,14 +8,18 @@ import { ScrollArea } from '@repo/ui/components/scroll-area';
 import {
   AlertCircle,
   AlertTriangle,
+  ArrowDown,
+  ArrowUp,
   Clock,
   Filter,
-  Heart,
+  Plane,
   Plus,
   Search,
-  Settings
+  Settings,
+  Wrench,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { aviationApi, AircraftType, Flight } from '@/services/aviationApi';
 
 interface HealthMetric {
   id: string;
@@ -26,75 +30,18 @@ interface HealthMetric {
   unit: string;
   status: 'normal' | 'warning' | 'critical';
   timestamp: string;
-  trend: 'up' | 'down' | 'stable';
+  trend: 'stable' | 'up' | 'down';
 }
 
 interface Alert {
   id: string;
   aircraftId: string;
-  type: 'system' | 'performance' | 'maintenance' | 'safety';
+  type: 'system' | 'maintenance' | 'performance';
   severity: 'low' | 'medium' | 'high';
   message: string;
   timestamp: string;
-  status: 'active' | 'resolved' | 'acknowledged';
+  status: 'active' | 'acknowledged' | 'resolved';
 }
-
-const HEALTH_METRICS: HealthMetric[] = [
-  {
-    id: '1',
-    aircraftId: 'N12345',
-    system: 'Engine',
-    metric: 'Temperature',
-    value: 850,
-    unit: '°C',
-    status: 'normal',
-    timestamp: '2024-03-15T10:30:00',
-    trend: 'stable'
-  },
-  {
-    id: '2',
-    aircraftId: 'N67890',
-    system: 'Hydraulics',
-    metric: 'Pressure',
-    value: 2800,
-    unit: 'PSI',
-    status: 'warning',
-    timestamp: '2024-03-15T10:30:00',
-    trend: 'up'
-  },
-  {
-    id: '3',
-    aircraftId: 'N24680',
-    system: 'APU',
-    metric: 'Fuel Flow',
-    value: 120,
-    unit: 'kg/h',
-    status: 'normal',
-    timestamp: '2024-03-15T10:30:00',
-    trend: 'down'
-  }
-];
-
-const ALERTS: Alert[] = [
-  {
-    id: '1',
-    aircraftId: 'N67890',
-    type: 'system',
-    severity: 'high',
-    message: 'Hydraulic pressure exceeding normal range',
-    timestamp: '2024-03-15T10:25:00',
-    status: 'active'
-  },
-  {
-    id: '2',
-    aircraftId: 'N12345',
-    type: 'maintenance',
-    severity: 'medium',
-    message: 'Engine oil level below recommended',
-    timestamp: '2024-03-15T10:20:00',
-    status: 'acknowledged'
-  }
-];
 
 const STATUS_COLORS = {
   normal: 'bg-green-500',
@@ -108,200 +55,201 @@ const SEVERITY_COLORS = {
   high: 'bg-red-500'
 };
 
-export default function HealthMonitoringPage() {
+export default function FleetHealthPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedSeverity, setSelectedSeverity] = useState<string | null>(null);
+  const [aircraftTypes, setAircraftTypes] = useState<AircraftType[]>([]);
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedAircraft, setSelectedAircraft] = useState<AircraftType | null>(null);
 
-  const filteredMetrics = HEALTH_METRICS.filter(metric => {
-    const matchesSearch = metric.aircraftId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         metric.system.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = !selectedStatus || metric.status === selectedStatus;
-    return matchesSearch && matchesStatus;
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [aircraftResponse, flightsResponse] = await Promise.all([
+          aviationApi.getAircraftTypes(),
+          aviationApi.getActiveFlights(),
+        ]);
+        setAircraftTypes(aircraftResponse.data);
+        setFlights(flightsResponse);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch aircraft data');
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredAlerts = ALERTS.filter(alert => {
-    const matchesSearch = alert.aircraftId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         alert.message.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSeverity = !selectedSeverity || alert.severity === selectedSeverity;
-    return matchesSearch && matchesSeverity;
-  });
+    fetchData();
+    // Refresh data every 5 minutes
+    const interval = setInterval(fetchData, 300000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const activeAlerts = ALERTS.filter(alert => alert.status === 'active');
-  const criticalMetrics = HEALTH_METRICS.filter(metric => metric.status === 'critical');
-  const warningMetrics = HEALTH_METRICS.filter(metric => metric.status === 'warning');
+  const filteredAircraft = aircraftTypes.filter(aircraft =>
+    aircraft.aircraft_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    aircraft.iata_code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const getAircraftFlights = (iata: string) => {
+    return flights.filter(flight => flight.aircraft_type === iata);
+  };
+
+  const getAircraftStatus = (aircraft: AircraftType) => {
+    const aircraftFlights = getAircraftFlights(aircraft.iata_code);
+    const hasActiveFlights = aircraftFlights.some(flight => flight.status === 'active');
+    const hasDelayedFlights = aircraftFlights.some(flight => flight.status === 'delayed');
+    
+    if (hasDelayedFlights) return 'warning';
+    if (hasActiveFlights) return 'normal';
+    return 'critical';
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
+  };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Health Monitoring</h1>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          New Alert
-        </Button>
+        <h1 className="text-3xl font-bold">Fleet Health</h1>
+        <div className="flex items-center space-x-4">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Aircraft
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
-            <AlertCircle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeAlerts.length}</div>
-            <p className="text-xs text-muted-foreground">Requires attention</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Critical Metrics</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{criticalMetrics.length}</div>
-            <p className="text-xs text-muted-foreground">Immediate action needed</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Warning Metrics</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{warningMetrics.length}</div>
-            <p className="text-xs text-muted-foreground">Monitor closely</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Healthy Systems</CardTitle>
-            <Heart className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">24</div>
-            <p className="text-xs text-muted-foreground">All systems operational</p>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Aircraft Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search aircraft..."
+                  className="pl-8 mb-4"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <ScrollArea className="h-[600px]">
+                  <div className="space-y-4">
+                    {loading ? (
+                      <div className="flex items-center justify-center h-32">
+                        <div className="animate-pulse text-gray-500">Loading aircraft data...</div>
+                      </div>
+                    ) : error ? (
+                      <div className="flex items-center justify-center h-32 text-red-500">
+                        {error}
+                      </div>
+                    ) : (
+                      filteredAircraft.map((aircraft) => {
+                        const status = getAircraftStatus(aircraft);
+                        const aircraftFlights = getAircraftFlights(aircraft.iata_code);
+                        const activeFlights = aircraftFlights.filter(f => f.status === 'active');
+                        const delayedFlights = aircraftFlights.filter(f => f.status === 'delayed');
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Health Metrics</CardTitle>
-              <div className="flex items-center space-x-2">
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search metrics..."
-                    className="pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <Button variant="outline">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                </Button>
+                        return (
+                          <div
+                            key={aircraft.iata_code}
+                            className={`p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors ${
+                              selectedAircraft?.iata_code === aircraft.iata_code ? 'bg-accent border-primary' : ''
+                            }`}
+                            onClick={() => setSelectedAircraft(aircraft)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium">{aircraft.aircraft_name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {aircraft.iata_code}
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Badge variant="outline">{aircraft.iata_code}</Badge>
+                                <div className={`w-2 h-2 rounded-full ${STATUS_COLORS[status]}`} />
+                              </div>
+                            </div>
+                            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                              <div className="flex items-center space-x-2">
+                                <Plane className="h-4 w-4" />
+                                <span>{activeFlights.length} Active Flights</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Clock className="h-4 w-4" />
+                                <span>{delayedFlights.length} Delayed</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px]">
-              <div className="space-y-4">
-                {filteredMetrics.map((metric) => (
-                  <div
-                    key={metric.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-3 h-3 rounded-full ${STATUS_COLORS[metric.status]}`} />
-                      <div>
-                        <div className="font-medium">{metric.system}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {metric.metric} • {metric.aircraftId}
-                        </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          {selectedAircraft && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Aircraft Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-medium mb-2">Specifications</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Type</span>
+                        <span>{selectedAircraft.iata_code}</span>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <div className="text-sm font-medium">
-                          {metric.value} {metric.unit}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {metric.trend === 'up' ? '↑' : metric.trend === 'down' ? '↓' : '→'}
-                        </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>IATA Code</span>
+                        <span>{selectedAircraft.iata_code}</span>
                       </div>
-                      <Badge variant="outline" className={STATUS_COLORS[metric.status]}>
-                        {metric.status}
-                      </Badge>
-                      <Button variant="ghost" size="icon">
-                        <Settings className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Active Alerts</CardTitle>
-              <div className="flex items-center space-x-2">
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search alerts..."
-                    className="pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <Button variant="outline">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px]">
-              <div className="space-y-4">
-                {filteredAlerts.map((alert) => (
-                  <div
-                    key={alert.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <AlertCircle className={`h-4 w-4 ${SEVERITY_COLORS[alert.severity]}`} />
-                      <div>
-                        <div className="font-medium">{alert.message}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {alert.type} • {alert.aircraftId}
-                        </div>
+                  <div>
+                    <h3 className="font-medium mb-2">Performance</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>IATA Code</span>
+                        <span>{selectedAircraft.iata_code}</span>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{alert.timestamp}</div>
-                        <div className="text-xs text-muted-foreground">{alert.status}</div>
-                      </div>
-                      <Badge variant="outline" className={SEVERITY_COLORS[alert.severity]}>
-                        {alert.severity}
-                      </Badge>
-                      <Button variant="ghost" size="icon">
-                        <Settings className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
+
+                  <div>
+                    <h3 className="font-medium mb-2">Flight Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Active Flights</span>
+                        <span>{getAircraftFlights(selectedAircraft.iata_code).filter(f => f.status === 'active').length}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Delayed Flights</span>
+                        <span>{getAircraftFlights(selectedAircraft.iata_code).filter(f => f.status === 'delayed').length}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Total Flights</span>
+                        <span>{getAircraftFlights(selectedAircraft.iata_code).length}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );
