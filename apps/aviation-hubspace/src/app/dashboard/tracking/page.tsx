@@ -42,28 +42,23 @@ export default function TrackingPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      setError(null);
       const response = await aviationApi.getFlights({
         flight_status: 'active',
         limit: 100,
       });
       setFlights(response.data);
-      setRetryCount(0); // Reset retry count on success
-    } catch (err: any) {
-      console.error('Error fetching data:', err);
-      setError(err.message);
+      setError(null);
+      setRetryCount(0);
+    } catch (err: unknown) {
+      console.error('Error fetching flights:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch flights';
+      setError(errorMessage);
       
-      // Handle rate limit errors
-      if (err.message.includes('Rate limit exceeded')) {
-        if (retryCount < maxRetries) {
-          // Exponential backoff: wait longer between each retry
-          const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1);
-          }, delay);
-        } else {
-          setError('Maximum retry attempts reached. Please try again later.');
-        }
+      if (errorMessage.includes('Rate limit exceeded') && retryCount < maxRetries) {
+        const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
+        setTimeout(() => {
+          setRetryCount(prev => prev + 1);
+        }, delay);
       }
     } finally {
       setLoading(false);
@@ -72,10 +67,9 @@ export default function TrackingPage() {
 
   useEffect(() => {
     fetchData();
-    // Refresh data every 30 seconds
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
-  }, [retryCount]);
+  }, [retryCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredFlights = flights.filter(flight =>
     flight.flight.iata.toLowerCase().includes(searchQuery.toLowerCase()) ||

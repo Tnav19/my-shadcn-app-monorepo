@@ -26,8 +26,8 @@ function AnimationController({ flight }: { flight: FlightTracking }) {
 export default function ClientMap({ selectedAircraftId, onAircraftClick }: ClientMapProps) {
   const [mounted, setMounted] = useState(false);
   const [flights, setFlights] = useState<FlightTracking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [_loading, setLoading] = useState(true);
+  const [_error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -41,19 +41,18 @@ export default function ClientMap({ selectedAircraftId, onAircraftClick }: Clien
         });
         setFlights(response.data);
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error fetching flights:', err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Failed to fetch flights');
       } finally {
         setLoading(false);
       }
     };
 
     fetchFlights();
-    // Refresh data every 30 seconds
     const interval = setInterval(fetchFlights, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!mounted) return null;
 

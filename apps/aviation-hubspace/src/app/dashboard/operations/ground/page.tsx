@@ -1,25 +1,20 @@
 'use client';
 
+import { Airport, aviationApi, Flight } from '@/services/aviationApi';
 import { Badge } from '@repo/ui/components/badge';
 import { Button } from '@repo/ui/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
 import {
-  AlertCircle,
-  ArrowDown,
-  ArrowUp,
   Clock,
-  Filter,
   Plane,
   Plus,
   Search,
-  Settings,
   Truck,
-  Users,
+  Users
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { aviationApi, Airport, Flight } from '@/services/aviationApi';
+import { useEffect, useState } from 'react';
 
 interface GroundCrew {
   id: string;

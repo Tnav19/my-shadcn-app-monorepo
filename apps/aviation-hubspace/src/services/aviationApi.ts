@@ -352,13 +352,14 @@ export interface FlightTracking {
 }
 
 // Add rate limit handling
-const handleApiError = (error: any) => {
-  if (!error.response) {
+const handleApiError = (error: unknown) => {
+  if (!(error instanceof Error)) {
     throw new Error('Network error. Please check your connection.');
   }
 
-  const status = error.response.status;
-  const message = error.response.data?.error?.message || 'An error occurred while fetching data.';
+  const axiosError = error as { response?: { status: number; data?: { error?: { message: string } } } };
+  const status = axiosError.response?.status;
+  const message = axiosError.response?.data?.error?.message || 'An error occurred while fetching data.';
 
   if (status === 429) throw new Error('Rate limit exceeded. Please try again later.');
   if (status === 401) throw new Error('Invalid API key. Please check your configuration.');
@@ -429,13 +430,20 @@ export const aviationApi = {
     limit?: number;
     offset?: number;
   }): Promise<ApiResponse<Airport>> => {
-    const response = await axios.get(`${BASE_URL}/airports`, {
-      params: {
-        access_key: API_KEY,
-        ...params,
-      },
-    });
-    return response.data;
+    try {
+      const response = await axios.get(`${BASE_URL}/airports`, {
+        params: {
+          access_key: API_KEY,
+          ...params,
+        },
+      });
+      return response.data;
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        throw new Error(`Failed to fetch airports: ${err.message}`);
+      }
+      throw new Error('Failed to fetch airports');
+    }
   },
 
   getAirportByIata: async (iata: string): Promise<Airport> => {
@@ -482,7 +490,12 @@ export const aviationApi = {
     }
     const data = await response.json();
     return {
-      data: data.data.map((aircraft: any) => ({
+      data: data.data.map((aircraft: { 
+        id: string;
+        aircraft_name: string;
+        iata_code: string;
+        plane_type_id: string;
+      }) => ({
         id: aircraft.id,
         aircraft_name: aircraft.aircraft_name,
         iata_code: aircraft.iata_code,

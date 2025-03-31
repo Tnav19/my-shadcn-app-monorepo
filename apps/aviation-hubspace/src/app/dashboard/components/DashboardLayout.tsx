@@ -1,21 +1,18 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { 
-  Home,
-  Plane,
-  Wrench,
-  Users,
-  Settings,
-  Layout,
-  Clock,
-  FileText,
-} from 'lucide-react';
-import { cn } from '@repo/ui/lib/utils';
 import { Button } from '@repo/ui/components/button';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { usePathname } from 'next/navigation';
+import { cn } from '@repo/ui/lib/utils';
+import {
+  Home,
+  Plane,
+  Settings,
+  Users,
+  Wrench
+} from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ReactNode } from 'react';
 
 interface DashboardLayoutProps {
   children: ReactNode;

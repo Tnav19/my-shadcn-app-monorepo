@@ -1,5 +1,6 @@
 'use client';
 
+import { Airport, aviationApi, City, Route } from '@/services/aviationApi';
 import { Badge } from '@repo/ui/components/badge';
 import { Button } from '@repo/ui/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
@@ -7,16 +8,13 @@ import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
 import {
   Clock,
-  Filter,
   Globe,
   MapPin,
-  Plane,
   Plus,
   Search,
-  Settings,
+  Settings
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { aviationApi, Route, Airport, City } from '@/services/aviationApi';
+import { useEffect, useState } from 'react';
 
 export default function RoutesPage() {
   const [searchQuery, setSearchQuery] = useState('');
