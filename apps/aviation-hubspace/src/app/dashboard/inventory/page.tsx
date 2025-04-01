@@ -143,8 +143,8 @@ const CATEGORY_COLORS = {
 
 export default function PartsInventoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedCategory] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
 
   const filteredParts = PARTS.filter(part => {
     const matchesSearch = part.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

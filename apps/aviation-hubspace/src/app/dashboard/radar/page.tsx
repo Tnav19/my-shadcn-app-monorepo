@@ -80,9 +80,9 @@ export default function RadarPage() {
   }, []);
 
   const filteredFlights = flights.filter(flight =>
-    flight.flight_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    flight.departure.airport.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    flight.arrival.airport.toLowerCase().includes(searchQuery.toLowerCase())
+    (flight.flight_number || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (flight.departure?.airport || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (flight.arrival?.airport || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleRefresh = () => {

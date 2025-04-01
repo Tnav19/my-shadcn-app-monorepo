@@ -139,9 +139,9 @@ const TYPE_COLORS = {
 
 export default function DocumentManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedType] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
+  const [selectedCategory] = useState<string | null>(null);
 
   const filteredDocuments = DOCUMENTS.filter(doc => {
     const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase());

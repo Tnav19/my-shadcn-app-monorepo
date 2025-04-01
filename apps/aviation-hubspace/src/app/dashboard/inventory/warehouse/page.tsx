@@ -158,8 +158,8 @@ const TYPE_COLORS = {
 
 export default function WarehousePage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedType] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
 
   const filteredLocations = LOCATIONS.filter(location => {
     const matchesSearch = location.name.toLowerCase().includes(searchQuery.toLowerCase());

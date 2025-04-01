@@ -19,8 +19,8 @@ import { useEffect, useState } from 'react';
 export default function RoutesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [routes, setRoutes] = useState<Route[]>([]);
-  const [airports, setAirports] = useState<Airport[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
+  const [, setAirports] = useState<Airport[]>([]);
+  const [, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
@@ -57,14 +57,6 @@ export default function RoutesPage() {
     route.arrival.airport.toLowerCase().includes(searchQuery.toLowerCase()) ||
     route.airline.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const getCityInfo = (cityName: string) => {
-    return cities.find(city => city.name === cityName);
-  };
-
-  const getAirportInfo = (iata: string) => {
-    return airports.find(airport => airport.iata === iata);
-  };
 
   return (
     <div className="p-6 space-y-6">
@@ -105,11 +97,6 @@ export default function RoutesPage() {
                       </div>
                     ) : (
                       filteredRoutes.map((route) => {
-                        const departureCity = getCityInfo(route.departure.city);
-                        const arrivalCity = getCityInfo(route.arrival.city);
-                        const departureAirport = getAirportInfo(route.departure.iata);
-                        const arrivalAirport = getAirportInfo(route.arrival.iata);
-
                         return (
                           <div
                             key={route.id}

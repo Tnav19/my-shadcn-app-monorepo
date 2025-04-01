@@ -73,7 +73,7 @@ const STATUS_COLORS = {
 
 export default function FleetPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
 
   const filteredAircraft = AIRCRAFT.filter(aircraft => {
     const matchesSearch = aircraft.registration.toLowerCase().includes(searchQuery.toLowerCase()) ||

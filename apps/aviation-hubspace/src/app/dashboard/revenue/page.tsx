@@ -161,8 +161,8 @@ const STATUS_COLORS = {
 
 export default function RevenuePage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedTrend, setSelectedTrend] = useState<string | null>(null);
+  const [selectedCategory] = useState<string | null>(null);
+  const [selectedTrend] = useState<string | null>(null);
 
   const filteredStreams = REVENUE_STREAMS.filter(stream => {
     const matchesSearch = stream.name.toLowerCase().includes(searchQuery.toLowerCase());

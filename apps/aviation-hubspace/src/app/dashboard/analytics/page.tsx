@@ -172,8 +172,8 @@ const STATUS_COLORS = {
 
 export default function AnalyticsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedTrend, setSelectedTrend] = useState<string | null>(null);
+  const [selectedCategory] = useState<string | null>(null);
+  const [selectedTrend] = useState<string | null>(null);
 
   const filteredMetrics = PERFORMANCE_METRICS.filter(metric => {
     const matchesSearch = metric.name.toLowerCase().includes(searchQuery.toLowerCase());

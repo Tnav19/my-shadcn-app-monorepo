@@ -37,25 +37,6 @@ interface TrainingModule {
   feedback?: string;
 }
 
-interface CrewMember {
-  id: string;
-  name: string;
-  role: 'pilot' | 'flight-attendant' | 'instructor';
-  status: 'active' | 'training' | 'off-duty' | 'leave';
-  certifications: {
-    name: string;
-    expiryDate: string;
-    status: 'valid' | 'expired' | 'pending';
-  }[];
-  trainingHistory: {
-    moduleId: string;
-    completionDate: string;
-    score: number;
-    feedback: string;
-  }[];
-  upcomingTraining: string[];
-}
-
 const TRAINING_MODULES: TrainingModule[] = [
   {
     id: '1',
@@ -108,63 +89,6 @@ const TRAINING_MODULES: TrainingModule[] = [
   }
 ];
 
-const CREW_MEMBERS: CrewMember[] = [
-  {
-    id: '1',
-    name: 'John Smith',
-    role: 'pilot',
-    status: 'active',
-    certifications: [
-      {
-        name: 'Airline Transport Pilot License',
-        expiryDate: '2025-03-15',
-        status: 'valid'
-      },
-      {
-        name: 'Type Rating - Boeing 737',
-        expiryDate: '2024-06-15',
-        status: 'valid'
-      }
-    ],
-    trainingHistory: [
-      {
-        moduleId: '1',
-        completionDate: '2024-02-15',
-        score: 95,
-        feedback: 'Excellent performance in emergency procedures'
-      }
-    ],
-    upcomingTraining: ['2', '3']
-  },
-  {
-    id: '2',
-    name: 'Sarah Johnson',
-    role: 'flight-attendant',
-    status: 'training',
-    certifications: [
-      {
-        name: 'Cabin Crew License',
-        expiryDate: '2024-12-31',
-        status: 'valid'
-      },
-      {
-        name: 'First Aid Certification',
-        expiryDate: '2024-09-30',
-        status: 'valid'
-      }
-    ],
-    trainingHistory: [
-      {
-        moduleId: '3',
-        completionDate: '2024-02-20',
-        score: 92,
-        feedback: 'Strong performance in CRM scenarios'
-      }
-    ],
-    upcomingTraining: ['1']
-  }
-];
-
 const TYPE_COLORS = {
   'recurrent': 'bg-blue-500',
   'initial': 'bg-green-500',
@@ -183,8 +107,8 @@ const STATUS_COLORS = {
 export default function TrainingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedType] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
 
   const filteredModules = TRAINING_MODULES.filter(module => {
     const matchesSearch = 
@@ -311,8 +235,8 @@ export default function TrainingPage() {
               {selectedModule ? (
                 <div className="space-y-6">
                   {(() => {
-                    const module = TRAINING_MODULES.find(m => m.id === selectedModule);
-                    if (!module) return null;
+                    const moduleData = TRAINING_MODULES.find(m => m.id === selectedModule);
+                    if (!moduleData) return null;
 
                     return (
                       <>
@@ -321,15 +245,15 @@ export default function TrainingPage() {
                           <div className="space-y-2">
                             <div className="flex items-center justify-between text-sm">
                               <span>Start Date</span>
-                              <span>{new Date(module.startDate).toLocaleString()}</span>
+                              <span>{new Date(moduleData.startDate).toLocaleString()}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
                               <span>End Date</span>
-                              <span>{new Date(module.endDate).toLocaleString()}</span>
+                              <span>{new Date(moduleData.endDate).toLocaleString()}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
                               <span>Duration</span>
-                              <span>{module.duration} hours</span>
+                              <span>{moduleData.duration} hours</span>
                             </div>
                           </div>
                         </div>
@@ -337,7 +261,7 @@ export default function TrainingPage() {
                         <div>
                           <h3 className="font-medium mb-2">Participants</h3>
                           <div className="space-y-2">
-                            {module.participants.map((participant, index) => (
+                            {moduleData.participants.map((participant, index) => (
                               <div key={index} className="flex items-center space-x-2 text-sm">
                                 <Users className="h-4 w-4" />
                                 <span>{participant}</span>
@@ -349,7 +273,7 @@ export default function TrainingPage() {
                         <div>
                           <h3 className="font-medium mb-2">Prerequisites</h3>
                           <div className="space-y-2">
-                            {module.prerequisites.map((prereq, index) => (
+                            {moduleData.prerequisites.map((prereq, index) => (
                               <div key={index} className="flex items-center space-x-2 text-sm">
                                 <BookCheck className="h-4 w-4" />
                                 <span>{prereq}</span>
@@ -361,7 +285,7 @@ export default function TrainingPage() {
                         <div>
                           <h3 className="font-medium mb-2">Training Materials</h3>
                           <div className="space-y-2">
-                            {module.materials.map((material, index) => (
+                            {moduleData.materials.map((material, index) => (
                               <div key={index} className="flex items-center space-x-2 text-sm">
                                 <BookOpen className="h-4 w-4" />
                                 <span>{material}</span>
@@ -370,16 +294,16 @@ export default function TrainingPage() {
                           </div>
                         </div>
 
-                        {module.score && (
+                        {moduleData.score && (
                           <div>
                             <h3 className="font-medium mb-2">Results</h3>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between text-sm">
                                 <span>Score</span>
-                                <span>{module.score}%</span>
+                                  <span>{moduleData.score}%</span>
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                {module.feedback}
+                                {moduleData.feedback}
                               </div>
                             </div>
                           </div>

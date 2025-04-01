@@ -16,22 +16,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-interface GroundCrew {
-  id: string;
-  name: string;
-  role: string;
-  status: 'available' | 'busy' | 'off-duty';
-  currentTask: string | null;
-}
-
-interface GroundEquipment {
-  id: string;
-  type: string;
-  status: 'available' | 'in-use' | 'maintenance';
-  location: string;
-  assignedTo: string | null;
-}
-
 const STATUS_COLORS = {
   available: 'bg-green-500',
   busy: 'bg-yellow-500',
@@ -93,10 +77,6 @@ export default function GroundOperationsPage() {
     if (hasDelayedFlights) return 'busy';
     if (hasActiveFlights) return 'available';
     return 'off-duty';
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
   };
 
   return (

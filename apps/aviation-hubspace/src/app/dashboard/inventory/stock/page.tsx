@@ -174,8 +174,8 @@ const CATEGORY_COLORS = {
 
 export default function StockLevelsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedCategory] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
 
   const filteredItems = STOCK_ITEMS.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

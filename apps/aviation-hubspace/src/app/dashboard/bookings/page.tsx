@@ -160,8 +160,8 @@ const PAYMENT_STATUS_COLORS = {
 
 export default function BookingsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
+  const [selectedClass] = useState<string | null>(null);
 
   const filteredBookings = BOOKINGS.filter(booking => {
     const matchesSearch = booking.bookingNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||

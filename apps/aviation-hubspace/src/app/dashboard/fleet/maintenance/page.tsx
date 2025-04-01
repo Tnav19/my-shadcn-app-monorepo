@@ -84,8 +84,8 @@ const PRIORITY_COLORS = {
 
 export default function FleetMaintenancePage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
+  const [selectedType] = useState<string | null>(null);
 
   const filteredTasks = MAINTENANCE_TASKS.filter(task => {
     const matchesSearch = task.aircraftId.toLowerCase().includes(searchQuery.toLowerCase()) ||

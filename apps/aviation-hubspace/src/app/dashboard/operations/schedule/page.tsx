@@ -1,21 +1,18 @@
 'use client';
 
+import { aviationApi, FutureFlight, TimetableFlight } from '@/services/aviationApi';
 import { Badge } from '@repo/ui/components/badge';
 import { Button } from '@repo/ui/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
 import { Input } from '@repo/ui/components/input';
 import { ScrollArea } from '@repo/ui/components/scroll-area';
 import {
-  Calendar,
   Clock,
-  Filter,
   Plane,
   Plus,
-  Search,
-  Settings,
+  Search
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { aviationApi, TimetableFlight, FutureFlight } from '@/services/aviationApi';
+import { useEffect, useState } from 'react';
 
 const STATUS_COLORS: Record<string, string> = {
   scheduled: 'bg-blue-500',
@@ -36,7 +33,7 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedFlight, setSelectedFlight] = useState<TimetableFlight | FutureFlight | null>(null);
-  const [selectedAirport, setSelectedAirport] = useState('DXB'); // Default to Dubai International
+  const [selectedAirport] = useState('DXB'); // Default to Dubai International
 
   useEffect(() => {
     const fetchData = async () => {

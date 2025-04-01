@@ -137,17 +137,10 @@ const STATUS_COLORS = {
   'on-leave': 'bg-blue-500'
 };
 
-const ROLE_COLORS = {
-  pilot: 'bg-blue-500',
-  'flight-attendant': 'bg-purple-500',
-  'ground-crew': 'bg-orange-500',
-  maintenance: 'bg-red-500'
-};
-
 export default function CrewManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedRole] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
 
   const filteredCrew = CREW_MEMBERS.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

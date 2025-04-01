@@ -1,5 +1,6 @@
 'use client';
 
+import { aviationApi, Flight } from '@/services/aviationApi';
 import { Badge } from '@repo/ui/components/badge';
 import { Button } from '@repo/ui/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
@@ -8,14 +9,11 @@ import {
   AlertCircle,
   AlertTriangle,
   ArrowRight,
-  Calendar,
   Clock,
   Plane,
-  RefreshCw,
-  Users,
+  RefreshCw
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { aviationApi, Flight } from '@/services/aviationApi';
+import { useEffect, useState } from 'react';
 
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-green-500',

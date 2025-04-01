@@ -79,8 +79,8 @@ const TYPE_COLORS = {
 
 export default function FuelManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
+  const [selectedType] = useState<string | null>(null);
 
   const filteredRecords = FUEL_RECORDS.filter(record => {
     const matchesSearch = record.aircraftId.toLowerCase().includes(searchQuery.toLowerCase()) ||

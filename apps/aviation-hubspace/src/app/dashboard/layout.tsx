@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { cn } from '@repo/ui/lib/utils';
-import { Button } from '@repo/ui/components/button';
-import { ScrollArea } from '@repo/ui/components/scroll-area';
-import { Input } from '@repo/ui/components/input';
-import { Badge } from '@repo/ui/components/badge';
+import { useTheme } from '@/components/theme-provider';
+import { getNavigation } from '@/services/navigation';
+import type { NavCategory } from '@/types/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/components/avatar';
+import { Badge } from '@repo/ui/components/badge';
+import { Button } from '@repo/ui/components/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,38 +14,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@repo/ui/components/dropdown-menu';
+import { Input } from '@repo/ui/components/input';
+import { ScrollArea } from '@repo/ui/components/scroll-area';
+import { cn } from '@repo/ui/lib/utils';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-  LayoutDashboard,
-  Plane,
-  Settings,
-  Package,
-  Factory,
-  ShoppingCart,
-  Building2,
-  LineChart,
-  Bell,
-  Search,
-  Menu,
-  ChevronDown,
-  User,
-  LogOut,
-  HelpCircle,
-  Sun,
-  Moon,
-  BellRing,
   BellOff,
-  Home,
-  Sparkles,
-  Activity,
-  Zap,
-  Shield,
+  BellRing,
+  ChevronDown,
+  HelpCircle,
+  LogOut,
+  Menu,
+  Moon,
+  Search,
+  Settings,
+  Sun,
+  User
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { getNavigation } from '@/services/navigation';
-import type { NavCategory } from '@/types/navigation';
-import { useTheme } from '@/components/theme-provider';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 export default function DashboardLayout({
   children,

@@ -33,23 +33,6 @@ interface Report {
   }[];
 }
 
-interface ReportTemplate {
-  id: string;
-  name: string;
-  description: string;
-  type: 'financial' | 'operational' | 'customer' | 'technical';
-  format: 'pdf' | 'excel' | 'csv';
-  parameters: {
-    key: string;
-    label: string;
-    type: 'date' | 'select' | 'text' | 'number';
-    options?: string[];
-    required: boolean;
-  }[];
-  lastUsed: string;
-  isFavorite: boolean;
-}
-
 const REPORTS: Report[] = [
   {
     id: '1',
@@ -107,93 +90,11 @@ const REPORTS: Report[] = [
   }
 ];
 
-const TEMPLATES: ReportTemplate[] = [
-  {
-    id: '1',
-    name: 'Financial Performance Report',
-    description: 'Comprehensive financial analysis including revenue, expenses, and profitability metrics',
-    type: 'financial',
-    format: 'pdf',
-    parameters: [
-      {
-        key: 'period',
-        label: 'Report Period',
-        type: 'date',
-        required: true
-      },
-      {
-        key: 'includeCharts',
-        label: 'Include Charts',
-        type: 'select',
-        options: ['true', 'false'],
-        required: false
-      }
-    ],
-    lastUsed: '2024-03-15T10:30:00Z',
-    isFavorite: true
-  },
-  {
-    id: '2',
-    name: 'Operational Metrics Dashboard',
-    description: 'Key operational performance indicators and trends',
-    type: 'operational',
-    format: 'excel',
-    parameters: [
-      {
-        key: 'metrics',
-        label: 'Metrics to Include',
-        type: 'select',
-        options: ['on-time', 'delays', 'cancellations', 'maintenance'],
-        required: true
-      },
-      {
-        key: 'fleet',
-        label: 'Fleet Selection',
-        type: 'select',
-        options: ['all', 'narrow-body', 'wide-body'],
-        required: true
-      }
-    ],
-    lastUsed: '2024-03-15T11:00:00Z',
-    isFavorite: false
-  },
-  {
-    id: '3',
-    name: 'Customer Feedback Analysis',
-    description: 'Customer satisfaction metrics and feedback analysis',
-    type: 'customer',
-    format: 'csv',
-    parameters: [
-      {
-        key: 'surveyType',
-        label: 'Survey Type',
-        type: 'select',
-        options: ['post-flight', 'general', 'loyalty'],
-        required: true
-      },
-      {
-        key: 'ratingThreshold',
-        label: 'Minimum Rating',
-        type: 'number',
-        required: false
-      }
-    ],
-    lastUsed: '2024-03-15T09:15:00Z',
-    isFavorite: true
-  }
-];
-
 const TYPE_COLORS = {
   financial: 'bg-green-500',
   operational: 'bg-blue-500',
   customer: 'bg-purple-500',
   technical: 'bg-orange-500'
-};
-
-const STATUS_COLORS = {
-  completed: 'bg-green-500',
-  processing: 'bg-yellow-500',
-  failed: 'bg-red-500'
 };
 
 const FORMAT_ICONS = {

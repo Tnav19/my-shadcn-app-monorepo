@@ -168,8 +168,8 @@ const CATEGORY_COLORS = {
 
 export default function SuppliersPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedCategory] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
 
   const filteredSuppliers = SUPPLIERS.filter(supplier => {
     const matchesSearch = supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

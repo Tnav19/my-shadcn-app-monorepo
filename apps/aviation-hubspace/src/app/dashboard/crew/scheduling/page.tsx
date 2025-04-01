@@ -11,30 +11,16 @@ import {
   Search
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-interface CrewMember {
-  id: string;
-  name: string;
-  role: 'pilot' | 'flight_attendant' | 'ground_crew';
-  status: 'available' | 'assigned' | 'off_duty';
-  currentFlight: string | null;
-  nextFlight: string | null;
-  restHours: number;
-}
-
-const STATUS_COLORS = {
-  available: 'bg-green-500',
-  assigned: 'bg-blue-500',
-  off_duty: 'bg-gray-500'
-};
+import Image from 'next/image';
+import { format } from 'date-fns';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/components/tabs';
 
 export default function CrewSchedulingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [flights, setFlights] = useState<Flight[]>([]);
   const [airlines, setAirlines] = useState<Airline[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
+  const [, setLoading] = useState(true);
+  const [, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -73,170 +59,94 @@ export default function CrewSchedulingPage() {
     return airline?.logo || null;
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
-
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Crew Scheduling</h1>
-        <div className="flex items-center space-x-4">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Assign Crew
-          </Button>
-        </div>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Assign Crew
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
+      <Tabs defaultValue="current" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="current">Current Flights</TabsTrigger>
+          <TabsTrigger value="future">Future Flights</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="current" className="space-y-4">
+          <div className="flex items-center space-x-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search flights..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle>Active Flights</CardTitle>
+              <CardTitle>Current Flight Schedule</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search flights..."
-                  className="pl-8 mb-4"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <ScrollArea className="h-[600px]">
-                  <div className="space-y-4">
-                    {loading ? (
-                      <div className="flex items-center justify-center h-32">
-                        <div className="animate-pulse text-gray-500">Loading flight data...</div>
-                      </div>
-                    ) : error ? (
-                      <div className="flex items-center justify-center h-32 text-red-500">
-                        {error}
-                      </div>
-                    ) : (
-                      filteredFlights.map((flight) => {
-                        const airlineLogo = getAirlineLogo(flight.airline.iata);
-                        return (
-                          <div
-                            key={flight.id}
-                            className={`p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors ${
-                              selectedFlight?.id === flight.id ? 'bg-accent border-primary' : ''
-                            }`}
-                            onClick={() => setSelectedFlight(flight)}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                {airlineLogo && (
-                                  <img
-                                    src={airlineLogo}
-                                    alt={flight.airline.name}
-                                    className="w-8 h-8 object-contain"
-                                  />
-                                )}
-                                <div>
-                                  <div className="font-medium">Flight {flight.flight_number}</div>
-                                  <div className="text-sm text-muted-foreground">
-                                    {flight.airline.name}
-                                  </div>
-                                </div>
-                              </div>
-                              <Badge variant="outline">{flight.status}</Badge>
-                            </div>
-                            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <div className="text-muted-foreground">Departure</div>
-                                <div className="font-medium">{flight.departure.airport}</div>
-                                <div className="text-muted-foreground">
-                                  {formatDate(flight.departure.scheduled)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-muted-foreground">Arrival</div>
-                                <div className="font-medium">{flight.arrival.airport}</div>
-                                <div className="text-muted-foreground">
-                                  {formatDate(flight.arrival.scheduled)}
-                                </div>
-                              </div>
-                            </div>
+              <ScrollArea className="h-[600px]">
+                <div className="space-y-4">
+                  {filteredFlights.map((flight) => (
+                    <Card key={flight.flight_number} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="relative w-8 h-8">
+                            <Image
+                              src={getAirlineLogo(flight.airline.iata) || '/placeholder-airline.png'}
+                              alt={flight.airline.name}
+                              fill
+                              className="rounded-full object-cover"
+                              sizes="32px"
+                            />
                           </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </ScrollArea>
-              </div>
+                          <div>
+                            <h3 className="font-medium">{flight.airline.name}</h3>
+                            <p className="text-sm text-gray-500">
+                              {flight.flight_number}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge variant="outline">
+                          {format(new Date(flight.departure.scheduled), 'MMM d, HH:mm')}
+                        </Badge>
+                      </div>
+                      <div className="mt-4 grid grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-500">From</p>
+                          <p className="font-medium">{flight.departure.airport}</p>
+                          <p className="text-sm text-gray-500">{flight.departure.iata}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm text-gray-500">Duration</p>
+                          <p className="font-medium">{flight.duration} minutes</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">To</p>
+                          <p className="font-medium">{flight.arrival.airport}</p>
+                          <p className="text-sm text-gray-500">{flight.arrival.iata}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </ScrollArea>
             </CardContent>
           </Card>
-        </div>
+        </TabsContent>
 
-        <div className="space-y-6">
-          {selectedFlight && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Flight Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-medium mb-2">Flight Information</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Flight Number</span>
-                        <span>{selectedFlight.flight_number}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Airline</span>
-                        <span>{selectedFlight.airline.name}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Status</span>
-                        <Badge variant="outline">{selectedFlight.status}</Badge>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="font-medium mb-2">Schedule</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Departure</span>
-                        <span>{formatDate(selectedFlight.departure.scheduled)}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Arrival</span>
-                        <span>{formatDate(selectedFlight.arrival.scheduled)}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Duration</span>
-                        <span>{selectedFlight.duration} minutes</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="font-medium mb-2">Crew Information</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Pilots</span>
-                        <span>2 Assigned</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Flight Attendants</span>
-                        <span>4 Assigned</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Ground Crew</span>
-                        <span>3 Assigned</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
+        <TabsContent value="future" className="space-y-4">
+          {/* Similar structure for future flights */}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 } 

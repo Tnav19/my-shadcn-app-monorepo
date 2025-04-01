@@ -142,18 +142,12 @@ const PRIORITY_COLORS = {
   'urgent': 'bg-red-500'
 };
 
-const SENTIMENT_COLORS = {
-  'positive': 'bg-green-500',
-  'neutral': 'bg-yellow-500',
-  'negative': 'bg-red-500'
-};
-
 export default function FeedbackPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFeedback, setSelectedFeedback] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedPriority, setSelectedPriority] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
+  const [selectedType] = useState<string | null>(null);
+  const [selectedPriority] = useState<string | null>(null);
 
   const filteredFeedback = FEEDBACK.filter(feedback => {
     const matchesSearch = 

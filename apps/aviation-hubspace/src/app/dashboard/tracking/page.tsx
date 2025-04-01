@@ -1,5 +1,7 @@
 'use client';
 
+import DynamicMap from '@/components/DynamicMap';
+import { aviationApi, FlightTracking } from '@/services/aviationApi';
 import { Badge } from '@repo/ui/components/badge';
 import { Button } from '@repo/ui/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
@@ -8,16 +10,12 @@ import { ScrollArea } from '@repo/ui/components/scroll-area';
 import {
   AlertTriangle,
   Clock,
-  Filter,
   Plane,
   Plus,
   RefreshCw,
-  Search,
-  Settings,
+  Search
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { aviationApi, FlightTracking } from '@/services/aviationApi';
-import DynamicMap from '@/components/DynamicMap';
+import { useEffect, useState } from 'react';
 
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-green-500',

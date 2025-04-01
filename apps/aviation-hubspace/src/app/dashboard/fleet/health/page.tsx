@@ -14,39 +14,12 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-interface HealthMetric {
-  id: string;
-  aircraftId: string;
-  system: string;
-  metric: string;
-  value: number;
-  unit: string;
-  status: 'normal' | 'warning' | 'critical';
-  timestamp: string;
-  trend: 'stable' | 'up' | 'down';
-}
-
-interface Alert {
-  id: string;
-  aircraftId: string;
-  type: 'system' | 'maintenance' | 'performance';
-  severity: 'low' | 'medium' | 'high';
-  message: string;
-  timestamp: string;
-  status: 'active' | 'acknowledged' | 'resolved';
-}
-
 const STATUS_COLORS = {
   normal: 'bg-green-500',
   warning: 'bg-yellow-500',
   critical: 'bg-red-500'
 };
 
-const SEVERITY_COLORS = {
-  low: 'bg-yellow-500',
-  medium: 'bg-orange-500',
-  high: 'bg-red-500'
-};
 
 export default function FleetHealthPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -98,10 +71,6 @@ export default function FleetHealthPage() {
     if (hasDelayedFlights) return 'warning';
     if (hasActiveFlights) return 'normal';
     return 'critical';
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
   };
 
   return (

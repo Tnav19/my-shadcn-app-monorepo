@@ -263,8 +263,8 @@ const CERTIFICATION_STATUS_COLORS = {
 export default function FlightAttendantsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAttendant, setSelectedAttendant] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedRank, setSelectedRank] = useState<string | null>(null);
+  const [selectedStatus] = useState<string | null>(null);
+  const [selectedRank] = useState<string | null>(null);
 
   const filteredAttendants = FLIGHT_ATTENDANTS.filter(attendant => {
     const matchesSearch = 
